@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Tuple
 
 import httpx
 import pdfplumber
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
 from openai import AsyncAzureOpenAI
 
 from src.core.config import settings
@@ -243,7 +243,8 @@ class IpoService:
                 continue
 
             raw_date = cols1[0].get_text(strip=True)
-            company_name = cols1[1].get_text(strip=True)
+            company_name = self._extract_company_name(cols1[1])
+            company_name = self._normalize_company_name(company_name)
             ticker = cols1[2].get_text(strip=True)
             offering_price_raw = cols1[6].get_text(strip=True)
 
@@ -331,6 +332,25 @@ class IpoService:
             except ValueError:
                 pass
         return None
+
+    @staticmethod
+    def _extract_company_name(cell: Tag) -> str:
+        """会社名セルの先頭テキスト要素のみを会社名として抽出する"""
+        for node in cell.descendants:
+            if isinstance(node, NavigableString):
+                text = str(node).strip()
+                if text:
+                    return text
+        return ""
+
+    @staticmethod
+    def _normalize_company_name(name: str) -> str:
+        """会社名表記を統一する"""
+        normalized = name.strip()
+        normalized = normalized.replace("（株）", "株式会社")
+        normalized = normalized.replace("(株)", "株式会社")
+        normalized = normalized.replace("㈱", "株式会社")
+        return normalized
 
 
 # モジュールレベルユーティリティ                                       #
