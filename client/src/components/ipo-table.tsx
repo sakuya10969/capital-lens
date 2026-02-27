@@ -32,7 +32,7 @@ function formatDate(dateStr: string): string {
 // IpoTable: 一覧フェッチ（エラー/retry含む）+ 行ごとオンデマンド要約  //
 export function IpoTable() {
   const [items, setItems] = useState<IpoItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [listStatus, setListStatus] = useState<"loading" | "error" | "done">("loading");
 
   // code -> SummaryState のクライアントサイドキャッシュ
