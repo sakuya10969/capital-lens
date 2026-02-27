@@ -29,10 +29,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-// ------------------------------------------------------------------ //
 // IpoTable: 一覧フェッチ（エラー/retry含む）+ 行ごとオンデマンド要約  //
-// ------------------------------------------------------------------ //
-
 export function IpoTable() {
   const [items, setItems] = useState<IpoItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -106,7 +103,6 @@ export function IpoTable() {
   );
 
   // ---- レンダリング分岐 -------------------------------------------- //
-
   if (listStatus === "loading") {
     return (
       <section>
@@ -183,10 +179,7 @@ export function IpoTable() {
   );
 }
 
-// ------------------------------------------------------------------ //
 // IpoRow: 行 + アコーディオン要約                                      //
-// ------------------------------------------------------------------ //
-
 function IpoRow({
   item,
   isOpen,
@@ -223,7 +216,7 @@ function IpoRow({
                        text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors whitespace-nowrap"
             aria-expanded={isOpen}
           >
-            要約を見る
+            会社概要を見る
             {isOpen ? (
               <ChevronUp className="w-3 h-3" />
             ) : (
@@ -248,10 +241,7 @@ function IpoRow({
   );
 }
 
-// ------------------------------------------------------------------ //
 // SummaryPanel: ローディング / エラー / 要約表示                       //
-// ------------------------------------------------------------------ //
-
 function SummaryPanel({
   code,
   state,
@@ -265,7 +255,7 @@ function SummaryPanel({
     return (
       <div className="flex items-center gap-2 text-gray-400 text-sm">
         <Loader2 className="animate-spin w-4 h-4" />
-        要約を読み込み中...
+        会社概要を読み込み中...
       </div>
     );
   }
@@ -273,7 +263,7 @@ function SummaryPanel({
   if (state.status === "error") {
     return (
       <div className="flex items-center gap-3 text-sm">
-        <span className="text-red-500">要約の取得に失敗しました。</span>
+        <span className="text-red-500">会社概要の取得に失敗しました。</span>
         <button
           onClick={() => onRetry(code)}
           className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium
