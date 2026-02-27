@@ -8,7 +8,6 @@ dependencies = [
     "apscheduler>=3.11.2",
     "beautifulsoup4>=4.14.3",
     "fastapi>=0.133.1",
-    "fredapi>=0.5.2",
     "httpx>=0.28.1",
     "lxml>=6.0.2",
     "pandas>=3.0.1",
