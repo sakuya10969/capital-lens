@@ -29,10 +29,7 @@ class IpoService:
     重い処理（PDF取得・LLM要約）は get_ipo_summary にのみ集約する。
     """
 
-    # ------------------------------------------------------------------ #
     # Public API                                                           #
-    # ------------------------------------------------------------------ #
-
     async def get_latest_ipos(self) -> IpoLatestResponse:
         """軽量な IPO 一覧を返す（PDF/LLM 呼び出しなし）"""
         timeout = float(settings.JPX_TIMEOUT)
@@ -95,10 +92,7 @@ class IpoService:
         _SUMMARY_CACHE[code] = (resp, now)
         return resp
 
-    # ------------------------------------------------------------------ #
     # PDF 取得・テキスト抽出                                               #
-    # ------------------------------------------------------------------ #
-
     async def _find_pdf_url_for_code(self, code: str) -> Optional[str]:
         """JPX一覧ページをスクレイピングして指定コードの企業概要 PDF URL を返す"""
         timeout = float(settings.JPX_TIMEOUT)
@@ -144,10 +138,7 @@ class IpoService:
                 texts.append(page_text)
         return "\n".join(texts)
 
-    # ------------------------------------------------------------------ #
     # Azure OpenAI 要約                                                   #
-    # ------------------------------------------------------------------ #
-
     async def _summarize_with_llm(self, code: str, text: str) -> List[str]:
         """Azure OpenAI を使って会社概要を 4〜8 箇条書きに要約する"""
         if not settings.AZ_OPENAI_ENDPOINT or not settings.AZ_OPENAI_API_KEY:
@@ -201,10 +192,7 @@ class IpoService:
         ]
         return bullets if bullets else [content.strip()]
 
-    # ------------------------------------------------------------------ #
     # HTML 取得・パース（一覧用）                                          #
-    # ------------------------------------------------------------------ #
-
     async def _fetch_and_parse(self, url: str, timeout: float) -> List[IpoItem]:
         """指定された *url* からHTMLを取得し、IPOテーブルをパース"""
         try:
@@ -297,10 +285,7 @@ class IpoService:
 
         return items
 
-    # ------------------------------------------------------------------ #
     # パース用ユーティリティ                                               #
-    # ------------------------------------------------------------------ #
-
     @staticmethod
     def _parse_date(raw: str) -> date:
         """様々なJPXの日付フォーマットに対するベストエフォートな日付パース
@@ -348,10 +333,7 @@ class IpoService:
         return None
 
 
-# ------------------------------------------------------------------ #
 # モジュールレベルユーティリティ                                       #
-# ------------------------------------------------------------------ #
-
 def _resolve_url(base: str, href: str) -> str:
     """相対 URL を絶対 URL に変換する"""
     if href.startswith("http"):
