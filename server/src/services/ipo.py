@@ -51,9 +51,7 @@ class IpoService:
             generated_at=datetime.utcnow(),
         )
 
-    # ------------------------------------------------------------------
     # Internal helpers
-    # ------------------------------------------------------------------
 
     async def _fetch_and_parse(
         self, url: str, timeout: float
@@ -144,9 +142,7 @@ class IpoService:
 
         return items
 
-    # ------------------------------------------------------------------
     # Parsing utilities
-    # ------------------------------------------------------------------
 
     @staticmethod
     def _parse_date(raw: str) -> date:
