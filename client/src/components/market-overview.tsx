@@ -116,6 +116,7 @@ export function MarketOverview({ data }: { data: MarketOverviewResponse }) {
       </div>
       <div className="space-y-6">
         <Section title="株価指数" items={data.indices} />
+        <Section title="リスク指標" items={data.risk_indicators} />
         <Section title="債券" items={data.bonds} />
         <Section title="為替" items={data.fx} />
         <Section title="商品" items={data.commodities} />

@@ -7,6 +7,7 @@ export type MarketItem = {
 
 export type MarketOverviewResponse = {
   indices: MarketItem[];
+  risk_indicators: MarketItem[];
   bonds: MarketItem[];
   fx: MarketItem[];
   commodities: MarketItem[];
