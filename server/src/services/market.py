@@ -14,9 +14,15 @@ MARKET_SYMBOLS: Dict[str, List[Dict[str, Any]]] = {
     "indices": [
         {"name": "日経平均", "ticker": "^N225"},
         {"name": "TOPIX", "ticker": "1306.T"},
+        {"name": "東証グロース250", "ticker": "2516.T"},
         {"name": "S&P 500", "ticker": "^GSPC"},
         {"name": "NASDAQ", "ticker": "^IXIC"},
         {"name": "ダウ平均", "ticker": "^DJI"},
+        {"name": "SOX指数", "ticker": "^SOX"},
+    ],
+    "risk_indicators": [
+        {"name": "VIX恐怖指数", "ticker": "^VIX"},
+        {"name": "ビットコイン", "ticker": "BTC-USD"},
     ],
     "bonds": [
         {"name": "米10年国債利回り", "ticker": "^TNX"},
@@ -85,7 +91,13 @@ class MarketService:
                 return None
 
         yf_timeout = float(settings.YFINANCE_TIMEOUT)
-        category_order = ["indices", "bonds", "fx", "commodities"]
+        category_order = [
+            "indices",
+            "risk_indicators",
+            "bonds",
+            "fx",
+            "commodities",
+        ]
         tasks: List = []
         category_sizes: Dict[str, int] = {}
 
@@ -110,6 +122,7 @@ class MarketService:
 
         return MarketOverviewResponse(
             indices=categorised["indices"],
+            risk_indicators=categorised["risk_indicators"],
             bonds=categorised["bonds"],
             fx=categorised["fx"],
             commodities=categorised["commodities"],

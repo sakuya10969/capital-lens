@@ -10,6 +10,7 @@ class MarketItem(BaseModel):
 
 class MarketOverviewResponse(BaseModel):
     indices: List[MarketItem]
+    risk_indicators: List[MarketItem]
     bonds: List[MarketItem]
     fx: List[MarketItem]
     commodities: List[MarketItem]
