@@ -4,12 +4,19 @@ export type IpoItem = {
   market: string;
   listing_date: string;
   offering_price: number | null;
-  summary: string;
+  outline_pdf_url: string | null;
   generated_at: string;
 };
 
 export type IpoLatestResponse = {
   items: IpoItem[];
   total_count: number;
+  generated_at: string;
+};
+
+export type IpoSummaryResponse = {
+  code: string;
+  bullets: string[];
+  cached: boolean;
   generated_at: string;
 };

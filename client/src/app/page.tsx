@@ -1,7 +1,6 @@
 import { MarketOverview } from "@/components/market-overview";
 import { IpoTable } from "@/components/ipo-table";
 import type { MarketOverviewResponse } from "@/types/market";
-import type { IpoLatestResponse } from "@/types/ipo";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -17,23 +16,8 @@ async function fetchMarketOverview(): Promise<MarketOverviewResponse | null> {
   }
 }
 
-async function fetchIpoLatest(): Promise<IpoLatestResponse | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/ipo/latest`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
 export default async function Home() {
-  const [market, ipo] = await Promise.all([
-    fetchMarketOverview(),
-    fetchIpoLatest(),
-  ]);
+  const market = await fetchMarketOverview();
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -44,11 +28,8 @@ export default async function Home() {
           <ErrorCard title="資本市場ダッシュボード" />
         )}
 
-        {ipo ? (
-          <IpoTable data={ipo} />
-        ) : (
-          <ErrorCard title="直近IPO一覧" />
-        )}
+        {/* IpoTable はクライアントコンポーネント: 一覧フェッチ・エラー・retry・オンデマンド要約をすべて内包 */}
+        <IpoTable />
       </div>
     </main>
   );
