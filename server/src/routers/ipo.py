@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/ipo", tags=["IPO"])
 
 
 def get_ipo_service() -> IpoService:
-    """Dependency provider for IpoService."""
+    """IpoServiceの依存性プロバイダ"""
     return IpoService()
 
 
@@ -18,8 +18,7 @@ def get_ipo_service() -> IpoService:
 async def get_latest_ipos(
     service: IpoService = Depends(get_ipo_service),
 ) -> IpoLatestResponse:
-    """Return structured information about recently listed stocks
-    (Japan-focused, sourced from JPX).
+    """最近上場した銘柄(日本市場向け、JPXから取得)に関する構造化された情報を返却
     """
     try:
         return await service.get_latest_ipos()

@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/market", tags=["Market"])
 
 
 def get_market_service() -> MarketService:
-    """Dependency provider for MarketService."""
+    """MarketServiceの依存性プロバイダ。"""
     return MarketService()
 
 
@@ -18,8 +18,7 @@ def get_market_service() -> MarketService:
 async def get_market_overview(
     service: MarketService = Depends(get_market_service),
 ) -> MarketOverviewResponse:
-    """Return a high-level snapshot of major market indices, bond yields,
-    FX rates, and commodity prices.
+    """主要な市場指数、国債利回り、為替レート、および商品価格の高レベルなスナップショットを返します。
     """
     try:
         return await service.get_market_overview()

@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class IpoItem(BaseModel):
-    """Individual IPO listing entry."""
+    """個別のIPO上場エントリー"""
 
     company_name: str
     ticker: str
@@ -17,7 +17,7 @@ class IpoItem(BaseModel):
 
 
 class IpoLatestResponse(BaseModel):
-    """Wrapper response for the /api/ipo/latest endpoint."""
+    """/api/ipo/latest エンドポイントのラッパーレスポンス"""
 
     items: List[IpoItem]
     total_count: int

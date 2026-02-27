@@ -1,5 +1,5 @@
 class ExternalAPIError(Exception):
-    """Raised when an external API call fails (yfinance, FRED, JPX, etc.)."""
+    """外部API(yfinance, FRED, JPXなど)の呼び出しに失敗した際に発生"""
 
     def __init__(self, source: str, detail: str = ""):
         self.source = source
@@ -8,7 +8,7 @@ class ExternalAPIError(Exception):
 
 
 class DataParsingError(Exception):
-    """Raised when response data cannot be parsed correctly."""
+    """レスポンスデータが正しくパースできない際に発生"""
 
     def __init__(self, source: str, detail: str = ""):
         self.source = source

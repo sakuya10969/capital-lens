@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 MARKET_SYMBOLS: Dict[str, List[Dict[str, Any]]] = {
     "indices": [
         {"name": "日経平均", "ticker": "^N225"},
-        {"name": "TOPIX", "ticker": "^TOPX"},
+        {"name": "TOPIX", "ticker": "^TPX"},
         {"name": "S&P 500", "ticker": "^GSPC"},
         {"name": "NASDAQ", "ticker": "^IXIC"},
         {"name": "ダウ平均", "ticker": "^DJI"},
@@ -32,10 +32,9 @@ MARKET_SYMBOLS: Dict[str, List[Dict[str, Any]]] = {
 
 
 def _fetch_yfinance_item(name: str, ticker: str) -> Optional[MarketItem]:
-    """Fetch a single market item from yfinance.
+    """yfinanceから単一のマーケットアイテムを取得
 
-    Returns ``None`` on failure so that one ticker error doesn't break
-    the whole response.
+    一つのティッカーのエラーでレスポンス全体が壊れないように、失敗時には ``None`` を返却
     """
     try:
         t = yf.Ticker(ticker)
@@ -65,12 +64,12 @@ def _fetch_yfinance_item(name: str, ticker: str) -> Optional[MarketItem]:
 
 
 class MarketService:
-    """Orchestrates market data retrieval via yfinance."""
+    """yfinanceを介した市場データの取得をオーケストレーション"""
 
     async def get_market_overview(self) -> MarketOverviewResponse:
-        """Return a consolidated market overview.
+        """統合された市場の概要を返却
 
-        All items are fetched concurrently with a per-item timeout.
+        すべてのアイテムは、アイテムごとのタイムアウト付きで並行して取得
         """
 
         async def _fetch_with_timeout(

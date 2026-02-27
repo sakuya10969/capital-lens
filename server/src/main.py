@@ -7,23 +7,20 @@ from fastapi.responses import JSONResponse
 from src.core.exceptions import ExternalAPIError, DataParsingError
 from src.routers import market, ipo
 
-# Logging
-
+# ロギング設定
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
 )
 
-# App
-
+# アプリケーション
 app = FastAPI(
     title="Capital Lens API",
     description="資本市場の概況と新規上場銘柄(IPO)に関するAPI",
     version="1.0.0",
 )
 
-# Middleware
-
+# ミドルウェア
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,9 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global exception handlers
-
-
+# グローバル例外ハンドラ
 @app.exception_handler(ExternalAPIError)
 async def external_api_error_handler(
     _request: Request, exc: ExternalAPIError
@@ -63,14 +58,11 @@ async def data_parsing_error_handler(
     )
 
 
-# Routers
-
+# ルーター
 app.include_router(market.router)
 app.include_router(ipo.router)
 
-# Health check
-
-
+# ヘルスチェック
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}

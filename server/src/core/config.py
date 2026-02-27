@@ -6,7 +6,7 @@ load_dotenv()
 
 
 class Settings:
-    """Application settings loaded from environment variables."""
+    """環境変数から読み込まれるアプリケーション設定。"""
 
     YFINANCE_TIMEOUT: int = int(os.getenv("YFINANCE_TIMEOUT", "15"))
     JPX_TIMEOUT: int = int(os.getenv("JPX_TIMEOUT", "15"))

@@ -12,51 +12,43 @@ from src.schemas.ipo import IpoItem, IpoLatestResponse
 
 logger = logging.getLogger(__name__)
 
-# JPX English IPO page
-JPX_IPO_URL = "https://www.jpx.co.jp/english/listing/stocks/new/index.html"
-
-# Fallback: Japanese IPO page
-JPX_IPO_URL_JA = "https://www.jpx.co.jp/listing/stocks/new/index.html"
+# JPXの日本語IPOページ
+JPX_IPO_URL = "https://www.jpx.co.jp/listing/stocks/new/index.html"
 
 
 class IpoService:
-    """Fetches and parses the latest IPO listings from JPX."""
+    """JPXから最新のIPO上場情報を取得してパース"""
 
     async def get_latest_ipos(self) -> IpoLatestResponse:
-        """Return structured IPO listing information.
-
-        Attempts the English JPX page first, falls back to the Japanese page.
+        """構造化されたIPO上場情報を返却
         """
         timeout = float(settings.JPX_TIMEOUT)
 
-        for url in [JPX_IPO_URL, JPX_IPO_URL_JA]:
-            try:
-                items = await self._fetch_and_parse(url, timeout)
-                if items:
-                    now = datetime.utcnow()
-                    return IpoLatestResponse(
-                        items=items,
-                        total_count=len(items),
-                        generated_at=now,
-                    )
-            except (ExternalAPIError, DataParsingError) as exc:
-                logger.warning("Failed to fetch from %s: %s", url, exc)
-                continue
+        try:
+            items = await self._fetch_and_parse(JPX_IPO_URL, timeout)
+            if items:
+                now = datetime.utcnow()
+                return IpoLatestResponse(
+                    items=items,
+                    total_count=len(items),
+                    generated_at=now,
+                )
+        except (ExternalAPIError, DataParsingError) as exc:
+            logger.error("Failed to fetch from %s: %s", JPX_IPO_URL, exc)
 
-        # If all attempts fail, return an empty result
-        logger.error("All JPX IPO fetch attempts failed.")
+        # 取得に失敗した場合、空の結果を返す
         return IpoLatestResponse(
             items=[],
             total_count=0,
             generated_at=datetime.utcnow(),
         )
 
-    # Internal helpers
+    # 内部ヘルパー
 
     async def _fetch_and_parse(
         self, url: str, timeout: float
     ) -> List[IpoItem]:
-        """Fetch HTML from *url* and parse the IPO table."""
+        """指定された *url* からHTMLを取得し、IPOテーブルをパース"""
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 response = await client.get(url)
@@ -73,13 +65,13 @@ class IpoService:
         return self._parse_html(response.text)
 
     def _parse_html(self, html: str) -> List[IpoItem]:
-        """Extract IPO entries from JPX HTML.
+        """JPXのHTMLからIPOエントリーを抽出
 
-        JPX uses a 2-row-per-entry format:
-          Row 1 (8 cols): Date(rowspan=2) | Company(rowspan=2) | Ticker | ... | OfferingPrice | Unit
-          Row 2 (6 cols): Market | ...
-        We pair consecutive rows to build each IpoItem.
-        """
+    JPXは1エントリーにつき2行を使用するフォーマット:
+      1行目 (8列): 上場日(rowspan=2) | 会社名(rowspan=2) | コード | ... | 公開価格 | 売買単位
+      2行目 (6列): 市場区分 | ...
+    連続する行をペアにして各 IpoItem を構築
+    """
         soup = BeautifulSoup(html, "lxml")
 
         table = (
@@ -99,7 +91,7 @@ class IpoService:
             row1 = rows[i]
             cols1 = row1.find_all("td") if isinstance(row1, Tag) else []
 
-            # Primary row has 8 columns (with rowspan=2 on date & company)
+            # メインの行は8列（日付と会社名は rowspan=2）
             if len(cols1) < 8:
                 i += 1
                 continue
@@ -109,18 +101,18 @@ class IpoService:
             ticker = cols1[2].get_text(strip=True)
             offering_price_raw = cols1[6].get_text(strip=True)
 
-            # Next row contains the market segment
+            # 次の行は市場区分を含む
             market = ""
             if i + 1 < len(rows):
                 row2 = rows[i + 1]
                 cols2 = row2.find_all("td") if isinstance(row2, Tag) else []
                 if cols2:
                     market = cols2[0].get_text(strip=True)
-                i += 2  # Skip both rows
+                i += 2  # 両方の行をスキップ
             else:
                 i += 1
 
-            # Skip entries without essential data
+            # 必須データがないエントリーをスキップ
             if not company_name or not ticker:
                 continue
 
@@ -142,18 +134,18 @@ class IpoService:
 
         return items
 
-    # Parsing utilities
+    # パース用ユーティリティ
 
     @staticmethod
     def _parse_date(raw: str) -> date:
-        """Best-effort date parsing for various JPX date formats.
+        """様々なJPXの日付フォーマットに対するベストエフォートな日付パース
 
-        JPX English format examples:
-          - "Apr. 02, 2026(Feb. 26, 2026)"  — listing date (application date)
-          - "Mar. 27, 2026(Feb. 20, 2026)"
-        We extract the first date (listing date).
-        """
-        # Strip parenthesised content (application date)
+    JPXの英語フォーマットの例:
+      - "Apr. 02, 2026(Feb. 26, 2026)"  — 上場日 (申込日)
+      - "Mar. 27, 2026(Feb. 20, 2026)"
+    最初の日付（上場日）を抽出
+    """
+        # 括弧内のコンテンツ（申込日）を削除
         clean = re.sub(r"\(.*?\)", "", raw).strip()
 
         for fmt in (
@@ -167,7 +159,7 @@ class IpoService:
             except ValueError:
                 continue
 
-        # Fallback: extract digits
+        # フォールバック: 数字を抽出
         digits = re.findall(r"\d+", clean)
         if len(digits) >= 3:
             try:
@@ -180,7 +172,7 @@ class IpoService:
 
     @staticmethod
     def _parse_price_text(text: str) -> Optional[float]:
-        """Extract a numeric offering price from text like '3,720' or '1,339.3'."""
+        """'3,720' や '1,339.3' のようなテキストから数値の公開価格を抽出"""
         cleaned = text.replace(",", "").strip()
         digits = re.sub(r"[^\d.]", "", cleaned)
         if digits:
@@ -194,10 +186,10 @@ class IpoService:
     def _generate_summary(
         company_name: str, market: str, listing_date: date
     ) -> str:
-        """Generate a simple text summary for an IPO listing.
+        """IPO上場情報のシンプルなテキストサマリーを生成
 
-        This is a lightweight, deterministic summariser — no LLM calls.
-        """
+    これは軽量で決定論的なサマライザーであり、LLMの呼び出しは行わない
+    """
         market_label = f" {market}" if market else ""
         return (
             f"{company_name} は {listing_date.isoformat()} に"
