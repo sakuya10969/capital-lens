@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 MARKET_SYMBOLS: Dict[str, List[Dict[str, Any]]] = {
     "indices": [
         {"name": "日経平均", "ticker": "^N225"},
-        {"name": "TOPIX", "ticker": "^TPX"},
+        {"name": "TOPIX", "ticker": "1306.T"},
         {"name": "S&P 500", "ticker": "^GSPC"},
         {"name": "NASDAQ", "ticker": "^IXIC"},
         {"name": "ダウ平均", "ticker": "^DJI"},
