@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 import logging
 
-from src.schemas.ipo import IpoLatestResponse
+from src.schemas.ipo import IpoLatestResponse, IpoSummaryResponse
 from src.services.ipo import IpoService
 
 logger = logging.getLogger(__name__)
@@ -18,8 +18,7 @@ def get_ipo_service() -> IpoService:
 async def get_latest_ipos(
     service: IpoService = Depends(get_ipo_service),
 ) -> IpoLatestResponse:
-    """最近上場した銘柄(日本市場向け、JPXから取得)に関する構造化された情報を返却
-    """
+    """最近上場した銘柄の軽量一覧を返す（PDF/LLM 呼び出しなし）"""
     try:
         return await service.get_latest_ipos()
     except Exception as exc:
@@ -27,4 +26,20 @@ async def get_latest_ipos(
         raise HTTPException(
             status_code=503,
             detail="IPOデータの取得に失敗しました。しばらくしてから再度お試しください。",
+        ) from exc
+
+
+@router.get("/{code}/summary", response_model=IpoSummaryResponse)
+async def get_ipo_summary(
+    code: str,
+    service: IpoService = Depends(get_ipo_service),
+) -> IpoSummaryResponse:
+    """指定銘柄の企業概要を PDF → Azure OpenAI で要約して返す（サーバー 24h キャッシュ）"""
+    try:
+        return await service.get_ipo_summary(code)
+    except Exception as exc:
+        logger.error("Unhandled error in /api/ipo/%s/summary: %s", code, exc)
+        raise HTTPException(
+            status_code=503,
+            detail=f"銘柄 {code} の要約取得に失敗しました。しばらくしてから再度お試しください。",
         ) from exc

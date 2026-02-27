@@ -25,6 +25,7 @@ MARKET_SYMBOLS: Dict[str, List[Dict[str, Any]]] = {
         {"name": "ビットコイン", "ticker": "BTC-USD"},
     ],
     "bonds": [
+        {"name": "米2年国債利回り", "ticker": "^IRX"},
         {"name": "米10年国債利回り", "ticker": "^TNX"},
     ],
     "fx": [
