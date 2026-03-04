@@ -1,17 +1,11 @@
 import { MarketOverview } from "@/components/market-overview";
 import { IpoTable } from "@/components/ipo-table";
 import { AiConsulting } from "@/components/ai-consulting";
-import type { MarketOverviewResponse } from "@/types/market";
+import { getMarketOverview } from "@/lib/api/market";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-async function fetchMarketOverview(): Promise<MarketOverviewResponse | null> {
+async function fetchMarketOverview() {
   try {
-    const res = await fetch(`${API_URL}/api/market/overview`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return null;
-    return res.json();
+    return await getMarketOverview();
   } catch {
     return null;
   }
