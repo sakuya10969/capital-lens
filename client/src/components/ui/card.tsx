@@ -11,7 +11,7 @@ export function Card({
     <div
       className={cn(
         "rounded-lg border border-gray-200 bg-white shadow-sm",
-        className
+        className,
       )}
     >
       {children}

@@ -59,13 +59,7 @@ function MarketCard({ item }: { item: MarketItem }) {
   );
 }
 
-function Section({
-  title,
-  items,
-}: {
-  title: string;
-  items: MarketItem[];
-}) {
+function Section({ title, items }: { title: string; items: MarketItem[] }) {
   if (items.length === 0) return null;
   return (
     <div>
@@ -92,7 +86,9 @@ export function MarketOverview({ data }: { data: MarketOverviewResponse }) {
   return (
     <section>
       <div className="flex items-baseline justify-between mb-4">
-        <h1 className="text-xl font-bold text-gray-900">資本市場ダッシュボード</h1>
+        <h1 className="text-xl font-bold text-gray-900">
+          資本市場ダッシュボード
+        </h1>
         <span className="text-xs text-gray-400">更新: {updatedAt} JST</span>
       </div>
       <div className="space-y-6">

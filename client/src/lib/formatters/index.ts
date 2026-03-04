@@ -1,6 +1,9 @@
 export function fmt(v: number | null | undefined, digits = 2): string {
   if (v == null) return "—";
-  return v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return v.toLocaleString("en-US", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
 }
 
 export function formatDate(dateStr: string): string {

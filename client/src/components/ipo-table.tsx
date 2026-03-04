@@ -10,7 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { IpoItem, IpoLatestResponse, IpoSummaryResponse } from "@/types/ipo";
+import type {
+  IpoItem,
+  IpoLatestResponse,
+  IpoSummaryResponse,
+} from "@/types/ipo";
 import type { LoadState } from "@/types/common";
 import { formatDate } from "@/lib/formatters";
 import { getIpoLatest, getIpoSummary } from "@/lib/api/ipo";
@@ -19,12 +23,14 @@ import { getIpoLatest, getIpoSummary } from "@/lib/api/ipo";
 export function IpoTable() {
   const [items, setItems] = useState<IpoItem[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [listStatus, setListStatus] = useState<"loading" | "error" | "done">("loading");
+  const [listStatus, setListStatus] = useState<"loading" | "error" | "done">(
+    "loading",
+  );
 
   // code -> LoadState のクライアントサイドキャッシュ
-  const [summaries, setSummaries] = useState<Map<string, LoadState<IpoSummaryResponse>>>(
-    () => new Map()
-  );
+  const [summaries, setSummaries] = useState<
+    Map<string, LoadState<IpoSummaryResponse>>
+  >(() => new Map());
   // 展開中の行コードセット
   const [openRows, setOpenRows] = useState<Set<string>>(() => new Set());
 
@@ -79,7 +85,7 @@ export function IpoTable() {
         return next;
       });
     },
-    [summaries, fetchSummary]
+    [summaries, fetchSummary],
   );
 
   // レンダリング分岐
@@ -146,7 +152,9 @@ export function IpoTable() {
                   key={`${item.ticker}-${item.listing_date}`}
                   item={item}
                   isOpen={openRows.has(item.ticker)}
-                  summaryState={summaries.get(item.ticker) ?? { status: "idle" }}
+                  summaryState={
+                    summaries.get(item.ticker) ?? { status: "idle" }
+                  }
                   onToggle={handleToggle}
                   onRetry={fetchSummary}
                 />

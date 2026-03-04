@@ -10,10 +10,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { EarningsItem, EarningsResponse, PerResponse, ReportResponse } from "@/types/ai_consulting";
+import type {
+  EarningsItem,
+  EarningsResponse,
+  PerResponse,
+  ReportResponse,
+} from "@/types/ai_consulting";
 import type { LoadState } from "@/types/common";
 import { fmt, changeColor } from "@/lib/formatters";
-import { getAiConsultingPer, getAiConsultingEarnings, generateAiConsultingReport } from "@/lib/api/ai-consulting";
+import {
+  getAiConsultingPer,
+  getAiConsultingEarnings,
+  generateAiConsultingReport,
+} from "@/lib/api/ai-consulting";
 
 function Note({ text }: { text: string | null }) {
   if (!text) return null;
@@ -25,7 +34,9 @@ type Tab = "per" | "earnings" | "report";
 
 // PER Table
 function PerSection() {
-  const [state, setState] = useState<LoadState<PerResponse>>({ status: "loading" });
+  const [state, setState] = useState<LoadState<PerResponse>>({
+    status: "loading",
+  });
 
   const fetch_ = useCallback(async () => {
     setState({ status: "loading" });
@@ -37,15 +48,20 @@ function PerSection() {
     }
   }, []);
 
-  useEffect(() => { fetch_(); }, [fetch_]);
+  useEffect(() => {
+    fetch_();
+  }, [fetch_]);
 
-  if (state.status === "idle" || state.status === "loading") return <LoadingRow />;
+  if (state.status === "idle" || state.status === "loading")
+    return <LoadingRow />;
   if (state.status === "error") return <ErrorRow onRetry={fetch_} />;
 
   const { data } = state;
   return (
     <div>
-      <p className="text-xs text-gray-400 mb-3">基準日時: {new Date(data.as_of).toLocaleString("ja-JP")}</p>
+      <p className="text-xs text-gray-400 mb-3">
+        基準日時: {new Date(data.as_of).toLocaleString("ja-JP")}
+      </p>
       <div className="rounded-lg border border-gray-200 overflow-hidden">
         <Table>
           <TableHeader>
@@ -61,20 +77,32 @@ function PerSection() {
           <TableBody>
             {data.items.map((item) => {
               const pe =
-                item.pe_used === "trailing" ? item.trailing_pe :
-                item.pe_used === "forward" ? item.forward_pe :
-                item.pe_used === "computed" ? item.computed_pe : null;
+                item.pe_used === "trailing"
+                  ? item.trailing_pe
+                  : item.pe_used === "forward"
+                    ? item.forward_pe
+                    : item.pe_used === "computed"
+                      ? item.computed_pe
+                      : null;
               return (
                 <TableRow key={item.symbol}>
-                  <TableCell className="font-medium text-gray-900">{item.name}</TableCell>
-                  <TableCell className="font-mono text-gray-600">{item.symbol}</TableCell>
+                  <TableCell className="font-medium text-gray-900">
+                    {item.name}
+                  </TableCell>
+                  <TableCell className="font-mono text-gray-600">
+                    {item.symbol}
+                  </TableCell>
                   <TableCell className="text-right text-gray-900">
-                    {pe != null ? `${item.currency ?? ""} ${fmt(item.price)}` : "—"}
+                    {pe != null
+                      ? `${item.currency ?? ""} ${fmt(item.price)}`
+                      : "—"}
                   </TableCell>
                   <TableCell className="text-right text-gray-900 font-medium">
                     {pe != null ? `${fmt(pe, 1)}x` : "—"}
                   </TableCell>
-                  <TableCell className="text-gray-500 text-xs">{item.pe_used ?? "—"}</TableCell>
+                  <TableCell className="text-gray-500 text-xs">
+                    {item.pe_used ?? "—"}
+                  </TableCell>
                   <TableCell>
                     <Note text={item.note} />
                   </TableCell>
@@ -90,7 +118,9 @@ function PerSection() {
 
 // Earnings
 function EarningsSection() {
-  const [state, setState] = useState<LoadState<EarningsResponse>>({ status: "loading" });
+  const [state, setState] = useState<LoadState<EarningsResponse>>({
+    status: "loading",
+  });
 
   const fetch_ = useCallback(async () => {
     setState({ status: "loading" });
@@ -102,25 +132,32 @@ function EarningsSection() {
     }
   }, []);
 
-  useEffect(() => { fetch_(); }, [fetch_]);
+  useEffect(() => {
+    fetch_();
+  }, [fetch_]);
 
-  if (state.status === "idle" || state.status === "loading") return <LoadingRow />;
+  if (state.status === "idle" || state.status === "loading")
+    return <LoadingRow />;
   if (state.status === "error") return <ErrorRow onRetry={fetch_} />;
 
   const { data } = state;
   return (
     <div className="space-y-6">
       <p className="text-xs text-gray-400">
-        対象期間: {data.window.from_date} 〜 {data.window.to_date}（±{data.window.days}日）
+        対象期間: {data.window.from_date} 〜 {data.window.to_date}（±
+        {data.window.days}日）
       </p>
 
       {/* Upcoming */}
       <div>
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
-          決算予定銘柄 <span className="text-blue-600">({data.upcoming.length}件)</span>
+          決算予定銘柄{" "}
+          <span className="text-blue-600">({data.upcoming.length}件)</span>
         </h3>
         {data.upcoming.length === 0 ? (
-          <p className="text-sm text-gray-400 py-4 text-center">期間内の決算予定銘柄なし</p>
+          <p className="text-sm text-gray-400 py-4 text-center">
+            期間内の決算予定銘柄なし
+          </p>
         ) : (
           <div className="rounded-lg border border-blue-200 overflow-hidden">
             <Table>
@@ -148,7 +185,8 @@ function EarningsSection() {
       {/* Unknown */}
       <div>
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
-          決算日未取得 / 範囲外 <span className="text-gray-400">({data.unknown.length}件)</span>
+          決算日未取得 / 範囲外{" "}
+          <span className="text-gray-400">({data.unknown.length}件)</span>
         </h3>
         {data.unknown.length > 0 && (
           <div className="rounded-lg border border-gray-200 overflow-hidden">
@@ -184,14 +222,26 @@ function EarningsRow({ item }: { item: EarningsItem }) {
       <TableRow>
         <TableCell className="font-medium text-gray-900">{item.name}</TableCell>
         <TableCell className="font-mono text-gray-600">{item.symbol}</TableCell>
-        <TableCell className="text-gray-700">{item.earnings_date ?? "—"}</TableCell>
-        <TableCell className={`text-right ${changeColor(item.price_change_5d)}`}>
-          {item.price_change_5d != null ? `${item.price_change_5d > 0 ? "+" : ""}${fmt(item.price_change_5d)}%` : "—"}
+        <TableCell className="text-gray-700">
+          {item.earnings_date ?? "—"}
         </TableCell>
-        <TableCell className={`text-right ${changeColor(item.price_change_1m)}`}>
-          {item.price_change_1m != null ? `${item.price_change_1m > 0 ? "+" : ""}${fmt(item.price_change_1m)}%` : "—"}
+        <TableCell
+          className={`text-right ${changeColor(item.price_change_5d)}`}
+        >
+          {item.price_change_5d != null
+            ? `${item.price_change_5d > 0 ? "+" : ""}${fmt(item.price_change_5d)}%`
+            : "—"}
         </TableCell>
-        <TableCell className="text-right">{item.trailing_pe != null ? `${fmt(item.trailing_pe, 1)}x` : "—"}</TableCell>
+        <TableCell
+          className={`text-right ${changeColor(item.price_change_1m)}`}
+        >
+          {item.price_change_1m != null
+            ? `${item.price_change_1m > 0 ? "+" : ""}${fmt(item.price_change_1m)}%`
+            : "—"}
+        </TableCell>
+        <TableCell className="text-right">
+          {item.trailing_pe != null ? `${fmt(item.trailing_pe, 1)}x` : "—"}
+        </TableCell>
         <TableCell>
           {item.summary ? (
             <button
@@ -208,7 +258,10 @@ function EarningsRow({ item }: { item: EarningsItem }) {
       </TableRow>
       {expanded && item.summary && (
         <TableRow className="bg-blue-50/40">
-          <TableCell colSpan={7} className="text-sm text-gray-700 leading-relaxed py-3 px-6">
+          <TableCell
+            colSpan={7}
+            className="text-sm text-gray-700 leading-relaxed py-3 px-6"
+          >
             {item.summary}
           </TableCell>
         </TableRow>
@@ -217,11 +270,11 @@ function EarningsRow({ item }: { item: EarningsItem }) {
   );
 }
 
-
-
 // Report
 function ReportSection() {
-  const [state, setState] = useState<LoadState<ReportResponse>>({ status: "idle" });
+  const [state, setState] = useState<LoadState<ReportResponse>>({
+    status: "idle",
+  });
 
   const generate = useCallback(async () => {
     setState({ status: "loading" });
@@ -241,12 +294,16 @@ function ReportSection() {
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium
                    hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {state.status === "loading" && <Loader2 className="animate-spin w-4 h-4" />}
+        {state.status === "loading" && (
+          <Loader2 className="animate-spin w-4 h-4" />
+        )}
         レポートを生成
       </button>
 
       {state.status === "error" && (
-        <p className="text-sm text-red-500">レポートの生成に失敗しました。再度お試しください。</p>
+        <p className="text-sm text-red-500">
+          レポートの生成に失敗しました。再度お試しください。
+        </p>
       )}
 
       {state.status === "done" && (
@@ -261,7 +318,11 @@ function ReportSection() {
               生データを見る (JSON)
             </summary>
             <pre className="px-4 py-3 text-xs text-gray-600 overflow-auto max-h-96 whitespace-pre-wrap">
-              {JSON.stringify({ per: state.data.per, earnings: state.data.earnings }, null, 2)}
+              {JSON.stringify(
+                { per: state.data.per, earnings: state.data.earnings },
+                null,
+                2,
+              )}
             </pre>
           </details>
         </div>
@@ -308,7 +369,9 @@ export function AiConsulting() {
 
   return (
     <section>
-      <h1 className="text-xl font-bold text-gray-900 mb-4">AI×コンサル銘柄分析</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-4">
+        AI×コンサル銘柄分析
+      </h1>
 
       {/* Tab bar */}
       <div className="flex gap-1 border-b border-gray-200 mb-6">
@@ -317,9 +380,10 @@ export function AiConsulting() {
             key={key}
             onClick={() => setTab(key)}
             className={`px-4 py-2 text-sm font-medium rounded-t transition-colors
-              ${tab === key
-                ? "border-b-2 border-indigo-600 text-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+              ${
+                tab === key
+                  ? "border-b-2 border-indigo-600 text-indigo-600"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
           >
             {label}
