@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.core.exceptions import ExternalAPIError, DataParsingError
-from src.routers import market, ipo
+from src.routers import market, ipo, ai_consulting
 
 # ロギング設定
 logging.basicConfig(
@@ -61,6 +61,7 @@ async def data_parsing_error_handler(
 # ルーター
 app.include_router(market.router)
 app.include_router(ipo.router)
+app.include_router(ai_consulting.router)
 
 # ヘルスチェック
 @app.get("/health")
