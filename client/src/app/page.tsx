@@ -1,5 +1,6 @@
 import { MarketOverview } from "@/components/market-overview";
 import { IpoTable } from "@/components/ipo-table";
+import { AiConsulting } from "@/components/ai-consulting";
 import type { MarketOverviewResponse } from "@/types/market";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -30,6 +31,9 @@ export default async function Home() {
 
         {/* IpoTable はクライアントコンポーネント: 一覧フェッチ・エラー・retry・オンデマンド要約をすべて内包 */}
         <IpoTable />
+
+        {/* AI×コンサル銘柄分析: PER一覧・決算期・レポート */}
+        <AiConsulting />
       </div>
     </main>
   );
