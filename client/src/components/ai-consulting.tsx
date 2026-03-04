@@ -242,7 +242,7 @@ function ReportSection() {
                    hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {state.status === "loading" && <Loader2 className="animate-spin w-4 h-4" />}
-        Generate Report
+        レポートを生成
       </button>
 
       {state.status === "error" && (
