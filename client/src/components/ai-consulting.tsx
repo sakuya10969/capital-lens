@@ -11,15 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { EarningsItem, EarningsResponse, PerResponse, ReportResponse } from "@/types/ai_consulting";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-type LoadState<T> = { status: "idle" } | { status: "loading" } | { status: "error" } | { status: "done"; data: T };
-
-function fmt(v: number | null | undefined, digits = 2): string {
-  if (v == null) return "—";
-  return v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
-}
+import type { LoadState } from "@/types/common";
+import { fmt, changeColor } from "@/lib/formatters";
+import { getAiConsultingPer, getAiConsultingEarnings, generateAiConsultingReport } from "@/lib/api/ai-consulting";
 
 function Note({ text }: { text: string | null }) {
   if (!text) return null;
@@ -36,9 +30,8 @@ function PerSection() {
   const fetch_ = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const res = await fetch(`${API_URL}/api/ai-consulting/per`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setState({ status: "done", data: await res.json() });
+      const data = await getAiConsultingPer();
+      setState({ status: "done", data });
     } catch {
       setState({ status: "error" });
     }
@@ -102,9 +95,8 @@ function EarningsSection() {
   const fetch_ = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const res = await fetch(`${API_URL}/api/ai-consulting/earnings`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setState({ status: "done", data: await res.json() });
+      const data = await getAiConsultingEarnings();
+      setState({ status: "done", data });
     } catch {
       setState({ status: "error" });
     }
@@ -225,24 +217,17 @@ function EarningsRow({ item }: { item: EarningsItem }) {
   );
 }
 
-function changeColor(v: number | null): string {
-  if (v == null) return "text-gray-500";
-  if (v > 0) return "text-green-600";
-  if (v < 0) return "text-red-500";
-  return "text-gray-700";
-}
+
 
 // Report
-
 function ReportSection() {
   const [state, setState] = useState<LoadState<ReportResponse>>({ status: "idle" });
 
   const generate = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const res = await fetch(`${API_URL}/api/ai-consulting/report`, { method: "POST" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setState({ status: "done", data: await res.json() });
+      const data = await generateAiConsultingReport();
+      setState({ status: "done", data });
     } catch {
       setState({ status: "error" });
     }

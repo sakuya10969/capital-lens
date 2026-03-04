@@ -11,23 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { IpoItem, IpoLatestResponse, IpoSummaryResponse } from "@/types/ipo";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-type SummaryState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "error" }
-  | { status: "done"; data: IpoSummaryResponse };
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
+import type { LoadState } from "@/types/common";
+import { formatDate } from "@/lib/formatters";
+import { getIpoLatest, getIpoSummary } from "@/lib/api/ipo";
 
 // IpoTable: 一覧フェッチ（エラー/retry含む）+ 行ごとオンデマンド要約  //
 export function IpoTable() {
@@ -35,8 +21,8 @@ export function IpoTable() {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [listStatus, setListStatus] = useState<"loading" | "error" | "done">("loading");
 
-  // code -> SummaryState のクライアントサイドキャッシュ
-  const [summaries, setSummaries] = useState<Map<string, SummaryState>>(
+  // code -> LoadState のクライアントサイドキャッシュ
+  const [summaries, setSummaries] = useState<Map<string, LoadState<IpoSummaryResponse>>>(
     () => new Map()
   );
   // 展開中の行コードセット
@@ -51,11 +37,7 @@ export function IpoTable() {
 
     setListStatus("loading");
     try {
-      const res = await fetch(`${API_URL}/api/ipo/latest`, {
-        signal: controller.signal,
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: IpoLatestResponse = await res.json();
+      const data = await getIpoLatest(controller.signal);
       setItems(data.items);
       setTotalCount(data.total_count);
       setListStatus("done");
@@ -73,9 +55,7 @@ export function IpoTable() {
   const fetchSummary = useCallback(async (code: string) => {
     setSummaries((prev) => new Map(prev).set(code, { status: "loading" }));
     try {
-      const res = await fetch(`${API_URL}/api/ipo/${code}/summary`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: IpoSummaryResponse = await res.json();
+      const data = await getIpoSummary(code);
       setSummaries((prev) => new Map(prev).set(code, { status: "done", data }));
     } catch {
       setSummaries((prev) => new Map(prev).set(code, { status: "error" }));
@@ -102,7 +82,7 @@ export function IpoTable() {
     [summaries, fetchSummary]
   );
 
-  // ---- レンダリング分岐 -------------------------------------------- //
+  // レンダリング分岐
   if (listStatus === "loading") {
     return (
       <section>
@@ -179,7 +159,7 @@ export function IpoTable() {
   );
 }
 
-// IpoRow: 行 + アコーディオン要約                                      //
+// IpoRow: 行 + アコーディオン要約
 function IpoRow({
   item,
   isOpen,
@@ -189,7 +169,7 @@ function IpoRow({
 }: {
   item: IpoItem;
   isOpen: boolean;
-  summaryState: SummaryState;
+  summaryState: LoadState<IpoSummaryResponse>;
   onToggle: (code: string) => void;
   onRetry: (code: string) => void;
 }) {
@@ -241,14 +221,14 @@ function IpoRow({
   );
 }
 
-// SummaryPanel: ローディング / エラー / 要約表示                       //
+// SummaryPanel: ローディング / エラー / 要約表示
 function SummaryPanel({
   code,
   state,
   onRetry,
 }: {
   code: string;
-  state: SummaryState;
+  state: LoadState<IpoSummaryResponse>;
   onRetry: (code: string) => void;
 }) {
   if (state.status === "idle" || state.status === "loading") {

@@ -1,26 +1,7 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { MarketItem, MarketOverviewResponse } from "@/types/market";
-
-function formatPrice(value: number, name: string): string {
-  // Yields and FX show fewer decimal places
-  if (name.includes("利回り") || name.includes("USD/JPY")) {
-    return value.toLocaleString("ja-JP", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }
-  if (value < 100) {
-    return value.toLocaleString("ja-JP", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }
-  return value.toLocaleString("ja-JP", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
-}
+import { formatPrice } from "@/lib/formatters";
 
 function ChangeIndicator({
   change,
