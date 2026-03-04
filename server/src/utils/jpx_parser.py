@@ -9,6 +9,7 @@ from src.schemas.ipo import IpoItem
 
 JPX_BASE_URL = "https://www.jpx.co.jp"
 
+
 def resolve_url(base: str, href: str) -> str:
     """相対 URL を絶対 URL に変換する"""
     if href.startswith("http"):
@@ -16,6 +17,7 @@ def resolve_url(base: str, href: str) -> str:
     if href.startswith("/"):
         return base.rstrip("/") + href
     return base.rstrip("/") + "/" + href
+
 
 def find_pdf_in_cols(cols: List[Tag]) -> Optional[str]:
     """テーブルセルのリストから最初の PDF リンクを抽出して絶対 URL を返す"""
@@ -26,6 +28,7 @@ def find_pdf_in_cols(cols: List[Tag]) -> Optional[str]:
             if href:
                 return resolve_url(JPX_BASE_URL, href)
     return None
+
 
 def parse_date(raw: str) -> date:
     clean = re.sub(r"\(.*?\)", "", raw).strip()
@@ -49,6 +52,7 @@ def parse_date(raw: str) -> date:
 
     return date.today()
 
+
 def parse_price_text(text: str) -> Optional[float]:
     cleaned = text.replace(",", "").strip()
     digits = re.sub(r"[^\d.]", "", cleaned)
@@ -59,6 +63,7 @@ def parse_price_text(text: str) -> Optional[float]:
             pass
     return None
 
+
 def extract_company_name(cell: Tag) -> str:
     for node in cell.descendants:
         if isinstance(node, NavigableString):
@@ -67,6 +72,7 @@ def extract_company_name(cell: Tag) -> str:
                 return text
     return ""
 
+
 def normalize_company_name(name: str) -> str:
     normalized = name.strip()
     normalized = normalized.replace("（株）", "株式会社")
@@ -74,12 +80,12 @@ def normalize_company_name(name: str) -> str:
     normalized = normalized.replace("㈱", "株式会社")
     return normalized
 
+
 def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
     soup = BeautifulSoup(html, "lxml")
 
-    table = (
-        soup.find("table", class_=re.compile(r"component.*table"))
-        or soup.find("table")
+    table = soup.find("table", class_=re.compile(r"component.*table")) or soup.find(
+        "table"
     )
     if table is None:
         raise DataParsingError("JPX", "No table element found on page.")
@@ -137,6 +143,7 @@ def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
         )
 
     return items
+
 
 def find_pdf_url_for_code_in_html(html: str, code: str) -> Optional[str]:
     soup = BeautifulSoup(html, "lxml")

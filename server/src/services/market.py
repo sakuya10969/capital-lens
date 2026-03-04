@@ -38,9 +38,6 @@ MARKET_SYMBOLS: Dict[str, List[Dict[str, Any]]] = {
 }
 
 
-
-
-
 class MarketService:
     """yfinanceを介した市場データの取得をオーケストレーション"""
 

@@ -7,6 +7,7 @@ from src.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+
 async def summarize_ipo_with_llm(code: str, text: str) -> List[str]:
     """Azure OpenAI を使って会社概要を 4〜8 箇条書きに要約する"""
     if not settings.AZ_OPENAI_ENDPOINT or not settings.AZ_OPENAI_API_KEY:

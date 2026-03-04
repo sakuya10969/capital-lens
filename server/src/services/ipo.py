@@ -80,7 +80,9 @@ class IpoService:
             try:
                 text = await self._extract_pdf_text(pdf_url)
             except Exception as exc:
-                logger.warning("PDF extraction failed for %s (%s): %s", code, pdf_url, exc)
+                logger.warning(
+                    "PDF extraction failed for %s (%s): %s", code, pdf_url, exc
+                )
 
         # Azure OpenAI で要約
         bullets = await summarize_ipo_with_llm(code, text)
@@ -113,8 +115,6 @@ class IpoService:
         timeout = float(settings.JPX_TIMEOUT) * 2
         return await extract_pdf_text_from_url(pdf_url, timeout, max_pages)
 
-
-
     # HTML 取得・パース（一覧用）                                          #
     async def _fetch_and_parse(self, url: str, timeout: float) -> List[IpoItem]:
         """指定された *url* からHTMLを取得し、IPOテーブルをパース"""
@@ -125,9 +125,7 @@ class IpoService:
         except httpx.TimeoutException as exc:
             raise ExternalAPIError("JPX", f"Timeout: {exc}") from exc
         except httpx.HTTPStatusError as exc:
-            raise ExternalAPIError(
-                "JPX", f"HTTP {exc.response.status_code}"
-            ) from exc
+            raise ExternalAPIError("JPX", f"HTTP {exc.response.status_code}") from exc
         except httpx.RequestError as exc:
             raise ExternalAPIError("JPX", str(exc)) from exc
 

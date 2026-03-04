@@ -29,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # グローバル例外ハンドラ
 @app.exception_handler(ExternalAPIError)
 async def external_api_error_handler(
@@ -62,6 +63,7 @@ async def data_parsing_error_handler(
 app.include_router(market.router)
 app.include_router(ipo.router)
 app.include_router(ai_consulting.router)
+
 
 # ヘルスチェック
 @app.get("/health")

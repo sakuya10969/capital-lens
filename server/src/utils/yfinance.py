@@ -9,6 +9,7 @@ from src.schemas.market import MarketItem
 
 logger = logging.getLogger(__name__)
 
+
 def safe_float(val: Any) -> Optional[float]:
     """NaN を None に変換しつつ float 化する"""
     try:
@@ -16,6 +17,7 @@ def safe_float(val: Any) -> Optional[float]:
         return None if (v != v) else v  # NaN check
     except (TypeError, ValueError):
         return None
+
 
 def fetch_per_item(name: str, symbol: str) -> PerItem:
     notes: List[str] = []
@@ -63,7 +65,10 @@ def fetch_per_item(name: str, symbol: str) -> PerItem:
         note="; ".join(notes) if notes else None,
     )
 
-def fetch_earnings_item(name: str, symbol: str, window_from: date, window_to: date) -> Tuple[EarningsItem, bool]:
+
+def fetch_earnings_item(
+    name: str, symbol: str, window_from: date, window_to: date
+) -> Tuple[EarningsItem, bool]:
     notes: List[str] = []
     earnings_date: Optional[date] = None
     price_change_5d: Optional[float] = None
@@ -83,7 +88,11 @@ def fetch_earnings_item(name: str, symbol: str, window_from: date, window_to: da
                 ed_val = cal.get("Earnings Date")
             else:
                 try:
-                    ed_val = cal.loc["Earnings Date"].iloc[0] if hasattr(cal, "loc") else None
+                    ed_val = (
+                        cal.loc["Earnings Date"].iloc[0]
+                        if hasattr(cal, "loc")
+                        else None
+                    )
                 except Exception:
                     pass
             if ed_val is not None:
@@ -109,7 +118,9 @@ def fetch_earnings_item(name: str, symbol: str, window_from: date, window_to: da
                 if len(hist_1m) >= 5:
                     oldest_5d = float(hist_1m["Close"].iloc[-5])
                     if oldest_5d != 0:
-                        price_change_5d = round((latest - oldest_5d) / oldest_5d * 100, 2)
+                        price_change_5d = round(
+                            (latest - oldest_5d) / oldest_5d * 100, 2
+                        )
                 else:
                     notes.append("5日分履歴不足")
             else:
@@ -145,6 +156,7 @@ def fetch_earnings_item(name: str, symbol: str, window_from: date, window_to: da
 
     is_upcoming = window_from <= earnings_date <= window_to
     return item, is_upcoming
+
 
 def fetch_market_item(name: str, ticker: str) -> Optional[MarketItem]:
     try:

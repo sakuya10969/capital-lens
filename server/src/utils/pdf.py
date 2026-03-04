@@ -4,11 +4,12 @@ from typing import List
 import httpx
 import pdfplumber
 
-async def extract_pdf_text_from_url(pdf_url: str, timeout: float, max_pages: int = 5) -> str:
+
+async def extract_pdf_text_from_url(
+    pdf_url: str, timeout: float, max_pages: int = 5
+) -> str:
     """PDF をダウンロードして pdfplumber でテキスト抽出する（先頭 max_pages ページ）"""
-    async with httpx.AsyncClient(
-        timeout=timeout, follow_redirects=True
-    ) as client:
+    async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
         resp = await client.get(pdf_url)
         resp.raise_for_status()
 
