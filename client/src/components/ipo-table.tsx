@@ -1,31 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
+
+import { IpoRow } from "@/components/ipo/ipo-row";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type {
-  IpoItem,
-  IpoLatestResponse,
-  IpoSummaryResponse,
-} from "@/types/ipo";
-import type { LoadState } from "@/types/common";
-import { formatDate } from "@/lib/formatters";
 import { getIpoLatest, getIpoSummary } from "@/lib/api/ipo";
+import type { LoadState } from "@/types/common";
+import type { IpoItem, IpoSummaryResponse } from "@/types/ipo";
 
-// IpoTable: 一覧フェッチ（エラー/retry含む）+ 行ごとオンデマンド要約  //
 export function IpoTable() {
   const [items, setItems] = useState<IpoItem[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -33,11 +22,9 @@ export function IpoTable() {
     "loading",
   );
 
-  // code -> LoadState のクライアントサイドキャッシュ
   const [summaries, setSummaries] = useState<
     Map<string, LoadState<IpoSummaryResponse>>
   >(() => new Map());
-  // 展開中の行コードセット
   const [openRows, setOpenRows] = useState<Set<string>>(() => new Set());
 
   const abortRef = useRef<AbortController | null>(null);
@@ -82,7 +69,6 @@ export function IpoTable() {
           next.delete(code);
         } else {
           next.add(code);
-          // 未取得 or エラーのときだけフェッチ
           const s = summaries.get(code);
           if (!s || s.status === "error") {
             fetchSummary(code);
@@ -94,7 +80,6 @@ export function IpoTable() {
     [summaries, fetchSummary],
   );
 
-  // レンダリング分岐
   if (listStatus === "loading") {
     return (
       <section>
@@ -158,9 +143,7 @@ export function IpoTable() {
                   key={`${item.ticker}-${item.listing_date}`}
                   item={item}
                   isOpen={openRows.has(item.ticker)}
-                  summaryState={
-                    summaries.get(item.ticker) ?? { status: "idle" }
-                  }
+                  summaryState={summaries.get(item.ticker) ?? { status: "idle" }}
                   onToggle={handleToggle}
                   onRetry={fetchSummary}
                 />
@@ -170,141 +153,5 @@ export function IpoTable() {
         </div>
       )}
     </section>
-  );
-}
-
-// IpoRow: 行 + アコーディオン要約
-function IpoRow({
-  item,
-  isOpen,
-  summaryState,
-  onToggle,
-  onRetry,
-}: {
-  item: IpoItem;
-  isOpen: boolean;
-  summaryState: LoadState<IpoSummaryResponse>;
-  onToggle: (code: string) => void;
-  onRetry: (code: string) => void;
-}) {
-  return (
-    <>
-      <TableRow>
-        <TableCell className="whitespace-nowrap text-gray-500">
-          {formatDate(item.listing_date)}
-        </TableCell>
-        <TableCell className="font-medium text-gray-900">
-          {item.company_name}
-        </TableCell>
-        <TableCell className="text-gray-600 font-mono">{item.ticker}</TableCell>
-        <TableCell className="text-gray-600">{item.market}</TableCell>
-        <TableCell className="text-right text-gray-900">
-          {item.offering_price != null
-            ? `¥${item.offering_price.toLocaleString("ja-JP")}`
-            : "—"}
-        </TableCell>
-        <TableCell>
-          <button
-            onClick={() => onToggle(item.ticker)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium
-                       text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors whitespace-nowrap"
-            aria-expanded={isOpen}
-          >
-            会社概要を見る
-            {isOpen ? (
-              <ChevronUp className="w-3 h-3" />
-            ) : (
-              <ChevronDown className="w-3 h-3" />
-            )}
-          </button>
-        </TableCell>
-      </TableRow>
-
-      {isOpen && (
-        <TableRow className="bg-blue-50/40">
-          <TableCell colSpan={6} className="py-4 px-6">
-            <SummaryPanel
-              code={item.ticker}
-              companyUrl={item.company_url}
-              state={summaryState}
-              onRetry={onRetry}
-            />
-          </TableCell>
-        </TableRow>
-      )}
-    </>
-  );
-}
-
-// SummaryPanel: ローディング / エラー / 要約表示
-function SummaryPanel({
-  code,
-  companyUrl,
-  state,
-  onRetry,
-}: {
-  code: string;
-  companyUrl?: string | null;
-  state: LoadState<IpoSummaryResponse>;
-  onRetry: (code: string) => void;
-}) {
-  if (state.status === "idle" || state.status === "loading") {
-    return (
-      <div className="flex items-center gap-2 text-gray-400 text-sm">
-        <Loader2 className="animate-spin w-4 h-4" />
-        会社概要を読み込み中...
-      </div>
-    );
-  }
-
-  if (state.status === "error") {
-    return (
-      <div className="flex items-center gap-3 text-sm">
-        <span className="text-red-500">会社概要の取得に失敗しました。</span>
-        <button
-          onClick={() => onRetry(code)}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium
-                     text-red-600 bg-red-100 hover:bg-red-200 transition-colors"
-        >
-          <RefreshCw className="w-3 h-3" />
-          再試行
-        </button>
-      </div>
-    );
-  }
-
-  const { data } = state;
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-semibold text-blue-700">会社概要</span>
-        {data.cached && (
-          <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
-            キャッシュ
-          </span>
-        )}
-      </div>
-      {companyUrl && (
-        <div className="mb-2">
-          <a
-            href={companyUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-          >
-            <ExternalLink className="w-4 h-4" />
-            JPX企業ページ
-          </a>
-        </div>
-      )}
-      <ul className="space-y-1">
-        {data.bullets.map((bullet, i) => (
-          <li key={i} className="flex gap-2 text-sm text-gray-700">
-            <span className="text-blue-400 mt-0.5 shrink-0">・</span>
-            <span>{bullet}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
