@@ -31,7 +31,7 @@ class IpoService:
     重い処理（PDF取得・LLM要約）は get_ipo_summary にのみ集約する。
     """
 
-    # Public API                                                           #
+    # Public API
     async def get_latest_ipos(self) -> IpoLatestResponse:
         """軽量な IPO 一覧を返す（PDF/LLM 呼び出しなし）"""
         timeout = float(settings.JPX_TIMEOUT)
@@ -96,7 +96,7 @@ class IpoService:
         _SUMMARY_CACHE[code] = (resp, now)
         return resp
 
-    # PDF 取得・テキスト抽出                                               #
+    # PDF 取得・テキスト抽出
     async def _find_pdf_url_for_code(self, code: str) -> Optional[str]:
         """JPX一覧ページをスクレイピングして指定コードの企業概要 PDF URL を返す"""
         timeout = float(settings.JPX_TIMEOUT)
@@ -115,7 +115,7 @@ class IpoService:
         timeout = float(settings.JPX_TIMEOUT) * 2
         return await extract_pdf_text_from_url(pdf_url, timeout, max_pages)
 
-    # HTML 取得・パース（一覧用）                                          #
+    # HTML 取得・パース（一覧用
     async def _fetch_and_parse(self, url: str, timeout: float) -> List[IpoItem]:
         """指定された *url* からHTMLを取得し、IPOテーブルをパース"""
         try:
