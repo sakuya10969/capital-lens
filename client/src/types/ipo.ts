@@ -1,5 +1,6 @@
 export type IpoItem = {
   company_name: string;
+  company_url?: string | null;
   ticker: string;
   market: string;
   listing_date: string;

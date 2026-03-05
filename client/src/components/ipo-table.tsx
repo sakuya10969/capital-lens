@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Loader2, RefreshCw } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -219,6 +225,7 @@ function IpoRow({
           <TableCell colSpan={6} className="py-4 px-6">
             <SummaryPanel
               code={item.ticker}
+              companyUrl={item.company_url}
               state={summaryState}
               onRetry={onRetry}
             />
@@ -232,10 +239,12 @@ function IpoRow({
 // SummaryPanel: ローディング / エラー / 要約表示
 function SummaryPanel({
   code,
+  companyUrl,
   state,
   onRetry,
 }: {
   code: string;
+  companyUrl?: string | null;
   state: LoadState<IpoSummaryResponse>;
   onRetry: (code: string) => void;
 }) {
@@ -275,6 +284,19 @@ function SummaryPanel({
           </span>
         )}
       </div>
+      {companyUrl && (
+        <div className="mb-2">
+          <a
+            href={companyUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            <ExternalLink className="w-4 h-4" />
+            JPX企業ページ
+          </a>
+        </div>
+      )}
       <ul className="space-y-1">
         {data.bullets.map((bullet, i) => (
           <li key={i} className="flex gap-2 text-sm text-gray-700">
