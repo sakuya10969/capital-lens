@@ -1,6 +1,6 @@
 import re
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 
@@ -81,6 +81,24 @@ def normalize_company_name(name: str) -> str:
     return normalized
 
 
+def extract_company_name_and_url(cell: Tag) -> Tuple[str, Optional[str]]:
+    a_tag = cell.find("a", href=True)
+    if a_tag and isinstance(a_tag, Tag):
+        name = a_tag.get_text(strip=True) or extract_company_name(cell)
+        href = str(a_tag.get("href", "")).strip()
+        company_url: Optional[str] = None
+        if href:
+            href_without_query = href.split("?", maxsplit=1)[0].split(
+                "#", maxsplit=1
+            )[0]
+            if not href_without_query.lower().endswith(".pdf"):
+                company_url = resolve_url(JPX_BASE_URL, href)
+        return normalize_company_name(name), company_url
+
+    name = extract_company_name(cell)
+    return normalize_company_name(name), None
+
+
 def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
     soup = BeautifulSoup(html, "lxml")
 
@@ -105,8 +123,7 @@ def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
             continue
 
         raw_date = cols1[0].get_text(strip=True)
-        company_name = extract_company_name(cols1[1])
-        company_name = normalize_company_name(company_name)
+        company_name, company_url = extract_company_name_and_url(cols1[1])
         ticker = cols1[2].get_text(strip=True)
         offering_price_raw = cols1[6].get_text(strip=True)
 
@@ -133,6 +150,7 @@ def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
         items.append(
             IpoItem(
                 company_name=company_name,
+                company_url=company_url,
                 ticker=ticker,
                 market=market,
                 listing_date=listing_date,

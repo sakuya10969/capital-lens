@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 class IpoItem(BaseModel):
     """個別のIPO上場エントリー（軽量一覧用）"""
-
     company_name: str
+    company_url: Optional[str] = None
     ticker: str
     market: str
     listing_date: date
@@ -18,7 +18,6 @@ class IpoItem(BaseModel):
 
 class IpoLatestResponse(BaseModel):
     """/api/ipo/latest エンドポイントのラッパーレスポンス"""
-
     items: List[IpoItem]
     total_count: int
     generated_at: datetime
@@ -26,11 +25,10 @@ class IpoLatestResponse(BaseModel):
 
 class IpoSummaryResponse(BaseModel):
     """/api/ipo/{code}/summary エンドポイントのレスポンス
-
+    
     bullets: Azure OpenAI が生成した 4〜8 箇条書き要約
     cached:  True の場合はサーバーキャッシュから返却（再生成なし）
     """
-
     code: str
     bullets: List[str]
     cached: bool
