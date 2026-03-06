@@ -6,11 +6,13 @@ import type { IpoSummaryResponse } from "@/types/ipo";
 export function SummaryPanel({
   code,
   companyUrl,
+  outlinePdfUrl,
   state,
   onRetry,
 }: {
   code: string;
   companyUrl?: string | null;
+  outlinePdfUrl?: string | null;
   state: LoadState<IpoSummaryResponse>;
   onRetry: (code: string) => void;
 }) {
@@ -50,8 +52,8 @@ export function SummaryPanel({
           </span>
         )}
       </div>
-      {companyUrl && (
-        <div className="mb-2">
+      <div className="mb-2 space-y-1">
+        {companyUrl && (
           <a
             href={companyUrl}
             target="_blank"
@@ -61,8 +63,8 @@ export function SummaryPanel({
             <ExternalLink className="w-4 h-4" />
             JPX企業ページ
           </a>
-        </div>
-      )}
+        )}
+      </div>
       <ul className="space-y-1">
         {data.bullets.map((bullet, i) => (
           <li key={i} className="flex gap-2 text-sm text-gray-700">
@@ -71,6 +73,19 @@ export function SummaryPanel({
           </li>
         ))}
       </ul>
+      <div className="mt-1 space-y-1">
+        {outlinePdfUrl && (
+              <a
+                href={outlinePdfUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                <ExternalLink className="w-4 h-4" />
+                会社概要の参照元（PDF）
+              </a>
+            )}
+        </div>
     </div>
   );
 }

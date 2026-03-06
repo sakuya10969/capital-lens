@@ -62,6 +62,7 @@ export function IpoRow({
             <SummaryPanel
               code={item.ticker}
               companyUrl={item.company_url}
+              outlinePdfUrl={item.outline_pdf_url}
               state={summaryState}
               onRetry={onRetry}
             />
