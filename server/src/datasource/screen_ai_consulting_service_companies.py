@@ -3,8 +3,10 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import re
+import time
 from typing import Any, Optional
 
+import diskcache
 import pandas as pd
 import yfinance as yf
 
@@ -12,6 +14,13 @@ import yfinance as yf
 DATASOURCE_DIR = Path(__file__).resolve().parent
 SOURCE_FILE = DATASOURCE_DIR / "data_j_service_companies.xlsx"
 OUTPUT_FILE_PATH = DATASOURCE_DIR / "data_j_service_ai_consulting_candidates.xlsx"
+CACHE_DIR = DATASOURCE_DIR / "yfinance_cache"
+
+# yfinance へのリクエストをバッチ処理してレート制限エラーを回避する
+FETCH_MAX_WORKERS = 5    # 同時リクエスト数
+FETCH_BATCH_SIZE = 50    # 1バッチあたりの銘柄数
+FETCH_BATCH_SLEEP = 1.5  # バッチ間のスリープ秒数（未キャッシュ時のみ有効）
+CACHE_EXPIRE_SECONDS = 86400  # キャッシュ有効期間（24時間）
 
 TICKER_CODE_COLUMN = "コード"
 COMPANY_NAME_COLUMN = "銘柄名"
@@ -78,9 +87,11 @@ IT_DIGITAL_KEYWORDS = [
     "enterprise software",
 ]
 
-MIN_AI_MATCH_COUNT = 2
-MIN_CONSULTING_MATCH_COUNT = 2
-MIN_IT_MATCH_COUNT = 2
+# 日本企業の yfinance サマリーは短く AI 用語の出現数が少ないため
+# "ai" の頭字語 1 件 + コンサル・IT シグナルそれぞれ 1 件を最低条件とする
+MIN_AI_MATCH_COUNT = 1
+MIN_CONSULTING_MATCH_COUNT = 1
+MIN_IT_MATCH_COUNT = 1
 
 
 def _to_yahoo_ticker(code: Any) -> str:
@@ -110,21 +121,36 @@ def load_service_companies() -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
-def fetch_company_profile(ticker: str) -> Optional[dict[str, Any]]:
+def fetch_company_profile(
+    ticker: str,
+    cache: Optional[diskcache.Cache] = None,
+) -> Optional[dict[str, Any]]:
+    """yfinance から企業プロフィールを取得する。cache を渡すとディスクキャッシュを利用する。"""
+    if cache is not None:
+        cached = cache.get(ticker)
+        if cached is not None:
+            return cached  # type: ignore[return-value]
+
     try:
         info = yf.Ticker(ticker).info
         if not info:
-            return None
-        return {
-            "sector": info.get("sector") or "",
-            "industry": info.get("industry") or "",
-            "summary": info.get("longBusinessSummary") or "",
-            "website": info.get("website") or "",
-            "short_name": info.get("shortName") or "",
-            "long_name": info.get("longName") or "",
-        }
+            result = None
+        else:
+            result = {
+                "sector": info.get("sector") or "",
+                "industry": info.get("industry") or "",
+                "summary": info.get("longBusinessSummary") or "",
+                "website": info.get("website") or "",
+                "short_name": info.get("shortName") or "",
+                "long_name": info.get("longName") or "",
+            }
     except Exception:
-        return None
+        result = None
+
+    if cache is not None:
+        cache.set(ticker, result, expire=CACHE_EXPIRE_SECONDS)
+
+    return result
 
 
 def _find_matched_keywords(text: str, keywords: list[str]) -> list[str]:
@@ -172,9 +198,6 @@ def _is_it_consulting_company(company_name: str, profile: dict[str, Any]) -> boo
     ai_matches = _find_matched_keywords(summary, AI_KEYWORDS)
     if len(set(ai_matches)) < MIN_AI_MATCH_COUNT:
         return False
-    strong_ai_matches = _find_matched_keywords(summary, STRONG_AI_KEYWORDS)
-    if not strong_ai_matches:
-        return False
 
     return True
 
@@ -190,8 +213,26 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
     tickers = source_df["yahoo_ticker"].tolist()
     print(f"Fetching yfinance profiles for {len(tickers)} companies...")
 
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        profiles = list(executor.map(fetch_company_profile, tickers))
+    profiles: list[Optional[dict[str, Any]]] = []
+    total_batches = (len(tickers) + FETCH_BATCH_SIZE - 1) // FETCH_BATCH_SIZE
+
+    with diskcache.Cache(str(CACHE_DIR)) as cache:
+        def _fetch(ticker: str) -> Optional[dict[str, Any]]:
+            return fetch_company_profile(ticker, cache=cache)
+
+        for batch_idx in range(total_batches):
+            batch = tickers[batch_idx * FETCH_BATCH_SIZE : (batch_idx + 1) * FETCH_BATCH_SIZE]
+            uncached = [t for t in batch if cache.get(t) is None]
+
+            with ThreadPoolExecutor(max_workers=FETCH_MAX_WORKERS) as executor:
+                profiles.extend(executor.map(_fetch, batch))
+
+            print(f"  batch {batch_idx + 1}/{total_batches} done "
+                  f"({len(profiles)}/{len(tickers)}, uncached={len(uncached)})")
+
+            # 未キャッシュの銘柄があった場合のみバッチ間でスリープしてレート制限を回避
+            if uncached and batch_idx < total_batches - 1:
+                time.sleep(FETCH_BATCH_SLEEP)
 
     profile_cache: dict[str, Optional[dict[str, Any]]] = dict(zip(tickers, profiles))
     fetched = sum(1 for p in profiles if p is not None)
@@ -227,9 +268,12 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
             "matched_ai_keywords": ", ".join(matched),
         })
 
-    result_df = pd.DataFrame(screened_rows)
-    if not result_df.empty:
-        result_df = result_df.reset_index(drop=True)
+    _COLUMNS = ["company_name", "yahoo_ticker", "website", "sector", "industry", "summary", "matched_ai_keywords"]
+    result_df = (
+        pd.DataFrame(screened_rows, columns=_COLUMNS).reset_index(drop=True)
+        if screened_rows
+        else pd.DataFrame(columns=_COLUMNS)
+    )
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
     result_df.to_excel(output_file, index=False)
