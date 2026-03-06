@@ -19,14 +19,11 @@ def resolve_url(base: str, href: str) -> str:
     return base.rstrip("/") + "/" + href
 
 
-def find_pdf_in_cols(cols: List[Tag]) -> Optional[str]:
-    """テーブルセルのリストから最初の PDF リンクを抽出して絶対 URL を返す"""
-    for col in cols:
-        a_tag = col.find("a", href=re.compile(r"\.pdf", re.IGNORECASE))
-        if a_tag and isinstance(a_tag, Tag):
-            href = str(a_tag.get("href", ""))
-            if href:
-                return resolve_url(JPX_BASE_URL, href)
+def find_pdf_in_cell(cell: Tag) -> Optional[str]:
+    a_tag = cell.find("a", href=re.compile(r"\.pdf", re.IGNORECASE))
+    if a_tag and isinstance(a_tag, Tag):
+        href = str(a_tag.get("href", ""))
+        return resolve_url(JPX_BASE_URL, href) if href else None
     return None
 
 
@@ -127,7 +124,7 @@ def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
         ticker = cols1[2].get_text(strip=True)
         offering_price_raw = cols1[6].get_text(strip=True)
 
-        outline_pdf_url: Optional[str] = find_pdf_in_cols(cols1)
+        outline_pdf_url: Optional[str] = find_pdf_in_cell(cols1[3]) if len(cols1) > 3 else None
 
         market = ""
         if i + 1 < len(rows):
