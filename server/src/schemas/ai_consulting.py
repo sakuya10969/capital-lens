@@ -15,6 +15,7 @@ class PerItem(BaseModel):
     trailing_eps: Optional[float] = None
     computed_pe: Optional[float] = None
     pe_used: Optional[str] = None  # "trailing" | "forward" | "computed" | None
+    website: Optional[str] = None
     note: Optional[str] = None
 
 
@@ -32,6 +33,7 @@ class EarningsItem(BaseModel):
     price_change_1m: Optional[float] = None
     trailing_pe: Optional[float] = None
     summary: Optional[str] = None
+    website: Optional[str] = None
     note: Optional[str] = None
 
 

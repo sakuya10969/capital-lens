@@ -1,10 +1,9 @@
 import asyncio
-import json
 import logging
 from datetime import date, datetime, timedelta
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from src.datasource.screen_ai_consulting_service_companies import load_ai_consulting_tickers
 from src.utils.yfinance import fetch_earnings_item, fetch_per_item
 
 from src.schemas.ai_consulting import (
@@ -18,22 +17,14 @@ from src.schemas.ai_consulting import (
 
 logger = logging.getLogger(__name__)
 
-_TICKERS_PATH = (
-    Path(__file__).parent.parent.parent / "config" / "ai_consulting_tickers.json"
-)
 _YFINANCE_TIMEOUT = 15.0
-
-
-def _load_tickers() -> List[Dict[str, str]]:
-    with open(_TICKERS_PATH, encoding="utf-8") as f:
-        return json.load(f)["items"]
 
 
 # Service
 class AiConsultingService:
 
     def _tickers(self) -> List[Dict[str, str]]:
-        return _load_tickers()
+        return load_ai_consulting_tickers()
 
     async def get_per(self) -> PerResponse:
         tickers = self._tickers()

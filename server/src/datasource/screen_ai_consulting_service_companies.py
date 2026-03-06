@@ -106,6 +106,7 @@ def fetch_company_profile(ticker: str) -> Optional[dict[str, Any]]:
             "sector": info.get("sector") or "",
             "industry": info.get("industry") or "",
             "summary": info.get("longBusinessSummary") or "",
+            "website": info.get("website") or "",
             "short_name": info.get("shortName") or "",
             "long_name": info.get("longName") or "",
         }
@@ -190,6 +191,7 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
         screened_rows.append({
             "company_name": company_name,
             "yahoo_ticker": ticker,
+            "website": profile.get("website", ""),
             "sector": profile.get("sector", ""),
             "industry": profile.get("industry", ""),
             "summary": summary,
@@ -204,6 +206,50 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
     result_df.to_excel(output_file, index=False)
 
     return result_df
+
+
+def load_ai_consulting_tickers() -> list[dict[str, str]]:
+    """AIコンサル候補銘柄一覧をExcelから読み込み {"name": ..., "symbol": ...} のリストで返す。
+
+    Raises:
+        FileNotFoundError: Excelファイルが存在しない場合
+        ValueError: 必要カラムがない・データが空の場合
+    """
+    if not OUTPUT_FILE_PATH.exists():
+        raise FileNotFoundError(
+            f"AIコンサル候補銘柄ファイルが見つかりません: {OUTPUT_FILE_PATH}\n"
+            "screen_ai_consulting_service_companies.py を先に実行してください。"
+        )
+
+    try:
+        df = pd.read_excel(OUTPUT_FILE_PATH, engine="openpyxl")
+    except Exception as exc:
+        raise RuntimeError(
+            f"Excelファイルの読み込みに失敗しました: {OUTPUT_FILE_PATH}\n原因: {exc}"
+        ) from exc
+
+    required_cols = {"company_name", "yahoo_ticker"}
+    missing = required_cols - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"必要なカラムがありません: {missing}. 実際のカラム: {df.columns.tolist()}"
+        )
+
+    if df.empty:
+        raise ValueError(f"AIコンサル候補銘柄ファイルが空です: {OUTPUT_FILE_PATH}")
+
+    tickers = [
+        {"name": str(row["company_name"]).strip(), "symbol": str(row["yahoo_ticker"]).strip()}
+        for row in df.to_dict("records")
+        if str(row.get("company_name", "")).strip() and str(row.get("yahoo_ticker", "")).strip()
+    ]
+
+    if not tickers:
+        raise ValueError(
+            f"有効な銘柄データが取得できませんでした: {OUTPUT_FILE_PATH}"
+        )
+
+    return tickers
 
 
 def screen_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.DataFrame:

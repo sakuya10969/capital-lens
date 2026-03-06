@@ -30,6 +30,7 @@ def fetch_per_item(name: str, symbol: str) -> PerItem:
 
     price = safe_float(info.get("currentPrice") or info.get("regularMarketPrice"))
     currency = info.get("currency")
+    website: Optional[str] = info.get("website") or None
     trailing_pe = safe_float(info.get("trailingPE"))
     forward_pe = safe_float(info.get("forwardPE"))
     trailing_eps = safe_float(info.get("trailingEps"))
@@ -62,6 +63,7 @@ def fetch_per_item(name: str, symbol: str) -> PerItem:
         trailing_eps=trailing_eps,
         computed_pe=computed_pe,
         pe_used=pe_used if pe_used else None,
+        website=website,
         note="; ".join(notes) if notes else None,
     )
 
@@ -75,6 +77,7 @@ def fetch_earnings_item(
     price_change_1m: Optional[float] = None
     trailing_pe: Optional[float] = None
     summary: Optional[str] = None
+    website: Optional[str] = None
 
     try:
         t = yf.Ticker(symbol)
@@ -131,6 +134,9 @@ def fetch_earnings_item(
         # trailing PE
         trailing_pe = safe_float(info.get("trailingPE"))
 
+        # website
+        website = info.get("website") or None
+
         # summary
         raw_summary: Optional[str] = info.get("longBusinessSummary")
         if raw_summary:
@@ -148,6 +154,7 @@ def fetch_earnings_item(
         price_change_1m=price_change_1m,
         trailing_pe=trailing_pe,
         summary=summary,
+        website=website,
         note="; ".join(notes) if notes else None,
     )
 
