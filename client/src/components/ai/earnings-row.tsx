@@ -10,7 +10,20 @@ export function EarningsRow({ item }: { item: EarningsItem }) {
   return (
     <>
       <TableRow>
-        <TableCell className="font-medium text-gray-900">{item.name}</TableCell>
+        <TableCell className="font-medium text-gray-900">
+          {item.website ? (
+            <a
+              href={item.website}
+              target="_blank"
+              rel="noreferrer"
+              className="text-indigo-600 hover:underline"
+            >
+              {item.name}
+            </a>
+          ) : (
+            item.name
+          )}
+        </TableCell>
         <TableCell className="font-mono text-gray-600">{item.symbol}</TableCell>
         <TableCell className="text-gray-700">
           {item.earnings_date ?? "—"}

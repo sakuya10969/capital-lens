@@ -9,6 +9,7 @@ export interface PerItem {
   trailing_eps: number | null;
   computed_pe: number | null;
   pe_used: "trailing" | "forward" | "computed" | null;
+  website: string | null;
   note: string | null;
 }
 
@@ -26,6 +27,7 @@ export interface EarningsItem {
   price_change_1m: number | null;
   trailing_pe: number | null;
   summary: string | null;
+  website: string | null;
   note: string | null;
 }
 
