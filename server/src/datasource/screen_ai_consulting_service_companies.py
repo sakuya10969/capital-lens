@@ -22,11 +22,25 @@ AI_KEYWORDS = [
     "machine learning",
     "deep learning",
     "generative ai",
-    "analytics",
-    "data analysis",
-    "data analytics",
-    "natural language",
+    "natural language processing",
+    "nlp",
     "computer vision",
+    "neural network",
+    "llm",
+    "large language model",
+]
+
+STRONG_AI_KEYWORDS = [
+    "artificial intelligence",
+    "machine learning",
+    "deep learning",
+    "generative ai",
+    "natural language processing",
+    "nlp",
+    "computer vision",
+    "neural network",
+    "llm",
+    "large language model",
 ]
 
 CONSULTING_KEYWORDS = [
@@ -34,40 +48,39 @@ CONSULTING_KEYWORDS = [
     "technology consulting",
     "digital consulting",
     "business consulting",
-    "management consulting",
     "strategy consulting",
-    "advisory",
     "consulting",
+    "advisory",
 ]
 
 CONSULTING_NAME_KEYWORDS_JA = [
     "コンサルティング",
     "コンサル",
     "アドバイザリー",
-    "総研",
 ]
 
-IT_KEYWORDS = [
+# より具体的なIT/デジタル関連キーワード（汎用的すぎるものを除外）
+IT_DIGITAL_KEYWORDS = [
     "information technology",
-    "digital",
+    "digital transformation",
     "dx",
-    "transformation",
-    "system",
-    "systems",
-    "software",
-    "cloud",
-    "data",
-    "analytics",
+    "software development",
+    "software engineering",
+    "cloud computing",
+    "cloud services",
+    "saas",
     "platform",
     "cybersecurity",
-    "security",
+    "data analytics",
+    "business intelligence",
     "erp",
-    "sap",
     "crm",
-    "ai",
-    "artificial intelligence",
-    "machine learning",
+    "enterprise software",
 ]
+
+MIN_AI_MATCH_COUNT = 2
+MIN_CONSULTING_MATCH_COUNT = 2
+MIN_IT_MATCH_COUNT = 2
 
 
 def _to_yahoo_ticker(code: Any) -> str:
@@ -114,10 +127,18 @@ def fetch_company_profile(ticker: str) -> Optional[dict[str, Any]]:
         return None
 
 
-def _contains_any(text: str, keywords: list[str]) -> bool:
-    """Check if text contains any of the keywords (case-insensitive)."""
+def _find_matched_keywords(text: str, keywords: list[str]) -> list[str]:
     lowered = text.lower()
-    return any(kw in lowered for kw in keywords)
+    matched: list[str] = []
+    for kw in keywords:
+        kw_lower = kw.lower()
+        if len(kw_lower) <= 3 and re.fullmatch(r"[a-z0-9]+", kw_lower):
+            pattern = rf"\b{re.escape(kw_lower)}\b"
+            if re.search(pattern, lowered):
+                matched.append(kw)
+        elif kw_lower in lowered:
+            matched.append(kw)
+    return matched
 
 
 def _is_it_consulting_company(company_name: str, profile: dict[str, Any]) -> bool:
@@ -127,33 +148,39 @@ def _is_it_consulting_company(company_name: str, profile: dict[str, Any]) -> boo
     Returns True only when:
     - consulting signal exists (in name, industry, or summary)
     - AND IT-related signal exists (in industry or summary)
+    - AND AI-related signal exists (in summary)
+    
+    This triple requirement significantly narrows down to AI × IT consulting companies.
     """
     industry = (profile.get("industry") or "")
     summary = (profile.get("summary") or "")
 
-    # Check for consulting signal (case-insensitive)
-    has_consulting_signal = (
-        _contains_any(company_name, CONSULTING_NAME_KEYWORDS_JA) or
-        _contains_any(industry.lower(), CONSULTING_KEYWORDS) or
-        _contains_any(summary.lower(), CONSULTING_KEYWORDS)
-    )
+    combined = f"{company_name} {industry} {summary}"
 
-    if not has_consulting_signal:
+    consulting_matches = _find_matched_keywords(combined, CONSULTING_KEYWORDS)
+    consulting_name_matches = _find_matched_keywords(company_name, CONSULTING_NAME_KEYWORDS_JA)
+    consulting_score = len(set(consulting_matches + consulting_name_matches))
+    if consulting_score < MIN_CONSULTING_MATCH_COUNT:
         return False
 
-    # Check for IT-related signal.
-    # "IT" (acronym) is matched case-sensitively as a whole word to avoid
-    # false positives from the English pronoun "it" / possessive "its".
-    combined_original = f"{industry} {summary}"
-    has_it_acronym = bool(re.search(r"\bIT\b", combined_original))
-    has_it_signal = has_it_acronym or _contains_any(combined_original.lower(), IT_KEYWORDS)
+    it_matches = _find_matched_keywords(f"{industry} {summary}", IT_DIGITAL_KEYWORDS)
+    has_it_acronym = bool(re.search(r"\bIT\b", f"{industry} {summary}"))
+    it_score = len(set(it_matches)) + (1 if has_it_acronym else 0)
+    if it_score < MIN_IT_MATCH_COUNT:
+        return False
 
-    return has_it_signal
+    ai_matches = _find_matched_keywords(summary, AI_KEYWORDS)
+    if len(set(ai_matches)) < MIN_AI_MATCH_COUNT:
+        return False
+    strong_ai_matches = _find_matched_keywords(summary, STRONG_AI_KEYWORDS)
+    if not strong_ai_matches:
+        return False
+
+    return True
 
 
 def _matched_ai_keywords(summary: str) -> list[str]:
-    lowered = summary.lower()
-    return [kw for kw in AI_KEYWORDS if kw in lowered]
+    return _find_matched_keywords(summary, AI_KEYWORDS)
 
 
 def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.DataFrame:
@@ -185,6 +212,8 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
 
         summary = profile.get("summary") or ""
         matched = _matched_ai_keywords(summary)
+        # AI keywords are already checked in _is_it_consulting_company,
+        # but we still collect them for display purposes
         if not matched:
             continue
 
