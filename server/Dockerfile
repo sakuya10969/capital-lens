@@ -12,9 +12,7 @@ RUN pip install --no-cache-dir uv
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
-# Copy source code + config
 COPY src ./src
-COPY config ./config
 
 EXPOSE 8000
 
