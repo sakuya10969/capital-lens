@@ -22,8 +22,8 @@ OUTPUT_FILE = DATASOURCE_DIR / "data_j_service_companies.xlsx"
 
 COL_33_CODE = "33業種コード"
 COL_33_NAME = "33業種区分"
-SERVICE_CODE = "9050"
-SERVICE_NAME = "サービス業"
+TARGET_33_CODES = {"9050"}
+TARGET_33_NAMES = {"サービス業"}
 
 
 def resolve_input_file(file_path: Optional[Path | str] = None) -> Path:
@@ -93,21 +93,21 @@ def normalize_industry_columns(df: pd.DataFrame) -> pd.DataFrame:
     return normalized_df
 
 
-def filter_service_companies(df: pd.DataFrame) -> pd.DataFrame:
-    service_mask = (
-        (df[COL_33_CODE] == SERVICE_CODE)
-        | (df[COL_33_NAME] == SERVICE_NAME)
+def filter_target_industries(df: pd.DataFrame) -> pd.DataFrame:
+    industry_mask = (
+        df[COL_33_CODE].isin(TARGET_33_CODES)
+        | df[COL_33_NAME].isin(TARGET_33_NAMES)
     )
-    return df.loc[service_mask].copy()
+    return df.loc[industry_mask].copy()
 
 
-def extract_service_companies(
+def extract_target_industries(
     input_file: Optional[Path | str] = None,
     output_file: Path = OUTPUT_FILE,
 ) -> pd.DataFrame:
     df = load_jpx_data(input_file)
     normalized_df = normalize_industry_columns(df)
-    filtered_df = filter_service_companies(normalized_df)
+    filtered_df = filter_target_industries(normalized_df)
 
     try:
         filtered_df.to_excel(output_file, index=False, engine="openpyxl")
@@ -120,6 +120,6 @@ def extract_service_companies(
 
 
 if __name__ == "__main__":
-    result_df = extract_service_companies()
+    result_df = extract_target_industries()
     print(f"filtered rows: {len(result_df)}")
     print(f"saved to: {OUTPUT_FILE}")
