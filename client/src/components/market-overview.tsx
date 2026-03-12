@@ -19,6 +19,11 @@ export function MarketOverview({ data }: { data: MarketOverviewResponse }) {
         </h1>
         <span className="text-xs text-gray-400">更新: {updatedAt} JST</span>
       </div>
+      {data.summary && (
+        <p className="mb-5 text-sm text-gray-600 leading-relaxed border-l-2 border-blue-300 pl-3">
+          {data.summary}
+        </p>
+      )}
       <div className="space-y-6">
         <Section title="株価指数" items={data.indices} />
         <Section title="リスク指標" items={data.risk_indicators} />

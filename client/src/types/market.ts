@@ -11,5 +11,6 @@ export type MarketOverviewResponse = {
   bonds: MarketItem[];
   fx: MarketItem[];
   commodities: MarketItem[];
+  summary: string;
   generated_at: string;
 };

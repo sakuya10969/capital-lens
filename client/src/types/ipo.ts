@@ -17,7 +17,7 @@ export type IpoLatestResponse = {
 
 export type IpoSummaryResponse = {
   code: string;
-  bullets: string[];
+  summary: string;
   cached: boolean;
   generated_at: string;
 };
