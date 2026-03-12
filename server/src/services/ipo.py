@@ -66,7 +66,7 @@ class IpoService:
                 logger.info("Cache hit for summary: %s", code)
                 return IpoSummaryResponse(
                     code=cached_resp.code,
-                    bullets=cached_resp.bullets,
+                    summary=cached_resp.summary,
                     cached=True,
                     generated_at=cached_resp.generated_at,
                 )
@@ -85,11 +85,11 @@ class IpoService:
                 )
 
         # Azure OpenAI で要約
-        bullets = await summarize_ipo_with_llm(code, text)
+        summary = await summarize_ipo_with_llm(code, text)
 
         resp = IpoSummaryResponse(
             code=code,
-            bullets=bullets,
+            summary=summary,
             cached=False,
             generated_at=now,
         )

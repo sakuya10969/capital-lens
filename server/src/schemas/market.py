@@ -16,4 +16,5 @@ class MarketOverviewResponse(BaseModel):
     bonds: List[MarketItem]
     fx: List[MarketItem]
     commodities: List[MarketItem]
+    summary: str = ""
     generated_at: datetime

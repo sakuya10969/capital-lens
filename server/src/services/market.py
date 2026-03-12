@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.utils.yfinance import fetch_market_item
+from src.utils.llm import summarize_market_with_llm
 
 from src.core.config import settings
 from src.schemas.market import MarketItem, MarketOverviewResponse
@@ -89,11 +90,19 @@ class MarketService:
             ]
             offset += size
 
+        # カテゴリデータを dict 形式に変換してサマリー生成（失敗しても空文字列）
+        categorised_dict = {
+            cat: [item.model_dump() for item in items]
+            for cat, items in categorised.items()
+        }
+        summary = await summarize_market_with_llm(categorised_dict)
+
         return MarketOverviewResponse(
             indices=categorised["indices"],
             risk_indicators=categorised["risk_indicators"],
             bonds=categorised["bonds"],
             fx=categorised["fx"],
             commodities=categorised["commodities"],
+            summary=summary,
             generated_at=datetime.utcnow(),
         )

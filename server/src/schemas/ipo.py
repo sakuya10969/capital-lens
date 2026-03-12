@@ -25,11 +25,11 @@ class IpoLatestResponse(BaseModel):
 
 class IpoSummaryResponse(BaseModel):
     """/api/ipo/{code}/summary エンドポイントのレスポンス
-    
-    bullets: Azure OpenAI が生成した 4〜8 箇条書き要約
+
+    summary: Azure OpenAI が生成した日本語約200文字の短文要約
     cached:  True の場合はサーバーキャッシュから返却（再生成なし）
     """
     code: str
-    bullets: List[str]
+    summary: str
     cached: bool
     generated_at: datetime
