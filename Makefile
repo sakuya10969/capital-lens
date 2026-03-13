@@ -23,16 +23,10 @@ install-server:
 
 dev:
 	@set -euo pipefail; \
-	trap 'kill 0' INT TERM EXIT; \
+	trap 'kill -TERM -$$$$ 2>/dev/null || true' EXIT INT TERM; \
 	(cd server && uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload) & \
-	BACKEND_PID=$$!; \
 	(cd client && pnpm dev) & \
-	FRONTEND_PID=$$!; \
-	wait -n $$BACKEND_PID $$FRONTEND_PID; \
-	STATUS=$$?; \
-	kill $$BACKEND_PID $$FRONTEND_PID 2>/dev/null || true; \
-	wait $$BACKEND_PID $$FRONTEND_PID 2>/dev/null || true; \
-	exit $$STATUS
+	wait
 
 dev-client:
 	cd client && pnpm dev
