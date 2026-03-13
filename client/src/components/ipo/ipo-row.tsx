@@ -4,6 +4,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/formatters";
 import type { LoadState } from "@/types/common";
 import type { IpoItem, IpoSummaryResponse } from "@/types/ipo";
@@ -40,10 +41,11 @@ export function IpoRow({
             : "—"}
         </TableCell>
         <TableCell>
-          <button
+          <Button
             onClick={() => onToggle(item.ticker)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium
-                       text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors whitespace-nowrap"
+            variant="ghost"
+            size="sm"
+            className="h-auto whitespace-nowrap bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600 hover:bg-blue-100 hover:text-blue-600"
             aria-expanded={isOpen}
           >
             会社概要を見る
@@ -52,7 +54,7 @@ export function IpoRow({
             ) : (
               <ChevronDown className="w-3 h-3" />
             )}
-          </button>
+          </Button>
         </TableCell>
       </TableRow>
 

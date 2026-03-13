@@ -1,3 +1,24 @@
+// GUI管理銘柄
+export interface StockRecord {
+  code: string;
+  symbol: string;
+  name: string | null;
+  enterprise_value: number | null;
+  market_cap: number | null;
+  per: number | null;
+  revenue: number | null;
+  operating_income: number | null;
+  net_income: number | null;
+  dividend_yield: number | null;
+  roe: number | null;
+  equity_ratio: number | null;
+  updated_at: string | null;
+}
+
+export interface StocksResponse {
+  stocks: StockRecord[];
+}
+
 // PER
 export interface PerItem {
   name: string;

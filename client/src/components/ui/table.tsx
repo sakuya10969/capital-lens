@@ -48,7 +48,7 @@ export function TableHead({
   return (
     <th
       className={cn(
-        "h-10 px-4 text-left align-middle font-medium text-gray-500 text-xs",
+        "h-10 px-4 text-left align-middle font-medium text-black text-sm",
         className,
       )}
     >

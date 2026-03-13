@@ -1,5 +1,6 @@
 import { ExternalLink, Loader2, RefreshCw } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import type { LoadState } from "@/types/common";
 import type { IpoSummaryResponse } from "@/types/ipo";
 
@@ -29,14 +30,15 @@ export function SummaryPanel({
     return (
       <div className="flex items-center gap-3 text-sm">
         <span className="text-red-500">会社概要の取得に失敗しました。</span>
-        <button
+        <Button
           onClick={() => onRetry(code)}
-          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium
-                     text-red-600 bg-red-100 hover:bg-red-200 transition-colors"
+          variant="ghost"
+          size="sm"
+          className="h-auto bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200 hover:text-red-600"
         >
           <RefreshCw className="w-3 h-3" />
           再試行
-        </button>
+        </Button>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Note } from "@/components/ai/note";
+import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { changeColor, fmt } from "@/lib/formatters";
 import type { EarningsItem } from "@/types/ai_consulting";
@@ -43,12 +44,14 @@ export function EarningsRow({ item }: { item: EarningsItem }) {
         </TableCell>
         <TableCell>
           {item.summary ? (
-            <button
+            <Button
               onClick={() => setExpanded((v) => !v)}
-              className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+              variant="link"
+              size="sm"
+              className="h-auto whitespace-nowrap px-0 text-xs text-blue-600"
             >
               {expanded ? "閉じる" : "概要を見る"}
-            </button>
+            </Button>
           ) : (
             <span className="text-xs text-gray-400">—</span>
           )}

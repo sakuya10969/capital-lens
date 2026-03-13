@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 
 import { IpoRow } from "@/components/ipo/ipo-row";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -100,14 +101,15 @@ export function IpoTable() {
           <p className="text-red-600 text-sm">
             IPO一覧の取得に失敗しました。バックエンドサーバーが起動しているか確認してください。
           </p>
-          <button
+          <Button
             onClick={fetchList}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium
-                       bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+            variant="ghost"
+            size="sm"
+            className="h-auto bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-200 hover:text-red-700"
           >
             <RefreshCw className="w-3 h-3" />
             再試行
-          </button>
+          </Button>
         </div>
       </section>
     );
