@@ -11,7 +11,7 @@ export function MarketCard({ item }: { item: MarketItem }) {
         <CardTitle>{item.name}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-bold text-gray-900 mb-1">
+        <p className="text-lg font-bold text-black mb-1">
           {formatPrice(item.current_price, item.name)}
         </p>
         <ChangeIndicator
