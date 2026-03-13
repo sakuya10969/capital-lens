@@ -27,15 +27,15 @@ export function IpoRow({
   return (
     <>
       <TableRow>
-        <TableCell className="whitespace-nowrap text-gray-500">
+        <TableCell className="whitespace-nowrap text-black">
           {formatDate(item.listing_date)}
         </TableCell>
-        <TableCell className="font-medium text-gray-900">
+        <TableCell className="font-medium text-black">
           {item.company_name}
         </TableCell>
-        <TableCell className="text-gray-600 font-mono">{item.ticker}</TableCell>
-        <TableCell className="text-gray-600">{item.market}</TableCell>
-        <TableCell className="text-right text-gray-900">
+        <TableCell className="text-black font-mono">{item.ticker}</TableCell>
+        <TableCell className="text-black">{item.market}</TableCell>
+        <TableCell className="text-right text-black">
           {item.offering_price != null
             ? `¥${item.offering_price.toLocaleString("ja-JP")}`
             : "—"}
