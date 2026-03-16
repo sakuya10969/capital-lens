@@ -184,108 +184,115 @@ export function StocksSection() {
           銘柄が登録されていません。上のフォームから追加してください。
         </p>
       ) : (
-        <div className="rounded-lg border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>銘柄コード</TableHead>
-                <TableHead>企業名</TableHead>
-                <TableHead className="text-right">企業価値</TableHead>
-                <TableHead className="text-right">時価総額</TableHead>
-                <TableHead className="text-right">PER</TableHead>
-                <TableHead className="text-right">売上</TableHead>
-                <TableHead className="text-right">営利</TableHead>
-                <TableHead className="text-right">純利</TableHead>
-                <TableHead className="text-right">配当利</TableHead>
-                <TableHead className="text-right">ROE</TableHead>
-                <TableHead className="text-right">自資本比</TableHead>
-                <TableHead className="text-center">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {stocks.map((s) => (
-                <TableRow key={s.symbol}>
-                  <TableCell className="font-mono text-black whitespace-nowrap">
-                    {s.symbol}
-                  </TableCell>
-                  <TableCell className="font-medium text-black whitespace-nowrap">
-                    {s.name ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtBillion(s.enterprise_value)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtBillion(s.market_cap)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {s.per != null ? `${fmtNum(s.per)}倍` : "—"}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtBillion(s.revenue)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtBillion(s.operating_income)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtBillion(s.net_income)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtPct(s.dividend_yield)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtPct(s.roe)}
-                  </TableCell>
-                  <TableCell className="text-right text-black">
-                    {fmtPct(s.equity_ratio)}
-                  </TableCell>
-                  <TableCell className="text-right whitespace-nowrap">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        onClick={() => handleRefreshOne(s.code)}
-                        disabled={refreshing[s.code]}
-                        variant="outline"
-                        size="sm"
-                        className="h-auto px-2 py-1 text-sm text-indigo-600 bg-white hover:bg-gray-100 hover:text-indigo-600 cursor-pointer"
-                        title="再取得"
-                      >
-                        {refreshing[s.code] ? "…" : "更新"}
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            disabled={deleting[s.code]}
-                            variant="outline"
-                            size="sm"
-                            className="h-auto px-2 py-1 text-sm text-red-500 bg-white hover:bg-gray-100 hover:text-red-500 cursor-pointer"
-                            title="削除"
-                          >
-                            {deleting[s.code] ? "…" : "削除"}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent size="sm">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>銘柄を削除しますか？</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {s.symbol}（{s.name ?? s.code}）を削除します。この操作は元に戻せません。
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                            <AlertDialogAction
-                              variant="destructive"
-                              onClick={() => handleDelete(s.code)}
-                            >
-                              削除
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+        <div className="space-y-2">
+          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
+            企業価値は概算です。J-Quants APIの無料プランでは有利子負債明細を取得できないため、
+            時価総額に負債合計ベースの近似値を加味して算出しています。
+            買掛金などの非有利子負債も含まれうるため、実際の企業価値より大きく出る可能性があります。
+          </p>
+          <div className="rounded-lg border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>銘柄コード</TableHead>
+                  <TableHead>企業名</TableHead>
+                  <TableHead className="text-right">企業価値</TableHead>
+                  <TableHead className="text-right">時価総額</TableHead>
+                  <TableHead className="text-right">PER</TableHead>
+                  <TableHead className="text-right">売上</TableHead>
+                  <TableHead className="text-right">営利</TableHead>
+                  <TableHead className="text-right">純利</TableHead>
+                  <TableHead className="text-right">配当利</TableHead>
+                  <TableHead className="text-right">ROE</TableHead>
+                  <TableHead className="text-right">自資本比</TableHead>
+                  <TableHead className="text-center">操作</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {stocks.map((s) => (
+                  <TableRow key={s.symbol}>
+                    <TableCell className="font-mono text-black whitespace-nowrap">
+                      {s.symbol}
+                    </TableCell>
+                    <TableCell className="font-medium text-black whitespace-nowrap">
+                      {s.name ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtBillion(s.enterprise_value)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtBillion(s.market_cap)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {s.per != null ? `${fmtNum(s.per)}倍` : "—"}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtBillion(s.revenue)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtBillion(s.operating_income)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtBillion(s.net_income)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtPct(s.dividend_yield)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtPct(s.roe)}
+                    </TableCell>
+                    <TableCell className="text-right text-black">
+                      {fmtPct(s.equity_ratio)}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          onClick={() => handleRefreshOne(s.code)}
+                          disabled={refreshing[s.code]}
+                          variant="outline"
+                          size="sm"
+                          className="h-auto px-2 py-1 text-sm text-indigo-600 bg-white hover:bg-gray-100 hover:text-indigo-600 cursor-pointer"
+                          title="再取得"
+                        >
+                          {refreshing[s.code] ? "…" : "更新"}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              disabled={deleting[s.code]}
+                              variant="outline"
+                              size="sm"
+                              className="h-auto px-2 py-1 text-sm text-red-500 bg-white hover:bg-gray-100 hover:text-red-500 cursor-pointer"
+                              title="削除"
+                            >
+                              {deleting[s.code] ? "…" : "削除"}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent size="sm">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>銘柄を削除しますか？</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {s.symbol}（{s.name ?? s.code}）を削除します。この操作は元に戻せません。
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                              <AlertDialogAction
+                                variant="destructive"
+                                onClick={() => handleDelete(s.code)}
+                              >
+                                削除
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 
