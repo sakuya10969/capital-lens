@@ -63,7 +63,7 @@ export function SummaryPanel({
             className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
           >
             <ExternalLink className="w-4 h-4" />
-            JPX企業ページ
+            企業ページ
           </a>
         )}
       </div>
