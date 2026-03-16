@@ -119,7 +119,7 @@ export function IpoTable() {
     <section>
       <div className="flex items-baseline justify-between mb-4">
         <h1 className="text-xl font-bold text-gray-900">直近IPO一覧</h1>
-        <span className="text-xs text-gray-400">{totalCount} 件</span>
+        <span className="text-xs text-black">{totalCount} 件</span>
       </div>
 
       {items.length === 0 ? (

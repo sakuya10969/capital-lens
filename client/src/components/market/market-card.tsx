@@ -8,7 +8,7 @@ export function MarketCard({ item }: { item: MarketItem }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{item.name}</CardTitle>
+        <CardTitle className="text-black">{item.name}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-lg font-bold text-black mb-1">
