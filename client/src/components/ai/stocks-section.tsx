@@ -12,6 +12,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   addStock,
   deleteStock,
   listStocks,
@@ -239,16 +250,36 @@ export function StocksSection() {
                       >
                         {refreshing[s.code] ? "…" : "更新"}
                       </Button>
-                      <Button
-                        onClick={() => handleDelete(s.code)}
-                        disabled={deleting[s.code]}
-                        variant="outline"
-                        size="sm"
-                        className="h-auto px-2 py-1 text-sm text-red-500 bg-white hover:bg-gray-100 hover:text-red-500 cursor-pointer"
-                        title="削除"
-                      >
-                        {deleting[s.code] ? "…" : "削除"}
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            disabled={deleting[s.code]}
+                            variant="outline"
+                            size="sm"
+                            className="h-auto px-2 py-1 text-sm text-red-500 bg-white hover:bg-gray-100 hover:text-red-500 cursor-pointer"
+                            title="削除"
+                          >
+                            {deleting[s.code] ? "…" : "削除"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent size="sm">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>銘柄を削除しますか？</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {s.symbol}（{s.name ?? s.code}）を削除します。この操作は元に戻せません。
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant="destructive"
+                              onClick={() => handleDelete(s.code)}
+                            >
+                              削除
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
