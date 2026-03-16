@@ -28,6 +28,7 @@ class Settings:
 
     YFINANCE_TIMEOUT: int = int(os.getenv("YFINANCE_TIMEOUT", "15"))
     JPX_TIMEOUT: int = int(os.getenv("JPX_TIMEOUT", "15"))
+    J_QUANTS_TIMEOUT: int = int(os.getenv("J_QUANTS_TIMEOUT", "30"))
 
     # Azure OpenAI（/api/ipo/{code}/summary の要約生成に使用）
     AZ_OPENAI_ENDPOINT: str = _getenv(
@@ -49,6 +50,14 @@ class Settings:
         "AZ_OPENAI_API_VERSION",
         "AZURE_OPENAI_API_VERSION",
         default="2024-10-21",
+    )
+
+    # J-Quants V2 API（/api/ai-consulting/stocks の企業情報取得に使用）
+    # J-Quants ダッシュボードの「API Key」から発行した文字列を設定すること。
+    # V2 では x-api-key ヘッダーで直接使用する（トークン交換不要）。
+    J_QUANTS_API_KEY: str = _getenv(
+        "J_QUANTS_API_KEY",
+        "J_QUANTS_REFRESH_TOKEN",  # V1時代の旧エイリアス互換
     )
 
 
