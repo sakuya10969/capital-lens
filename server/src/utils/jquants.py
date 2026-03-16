@@ -79,7 +79,9 @@ def extract_data(payload: Dict[str, Any]) -> Any:
     return payload.get("data")
 
 
-def _extract_data_records(payload: Dict[str, Any], endpoint: str, code: str) -> List[Dict[str, Any]]:
+def _extract_data_records(
+    payload: Dict[str, Any], endpoint: str, code: str
+) -> List[Dict[str, Any]]:
     """J-Quants v2 の payload['data'] をレコード配列へ正規化する。"""
     data = extract_data(payload)
 
@@ -87,12 +89,16 @@ def _extract_data_records(payload: Dict[str, Any], endpoint: str, code: str) -> 
         if not isinstance(payload, dict):
             logger.warning(
                 "J-Quants %s: payload が dict ではありません code=%s type=%s",
-                endpoint, code, type(payload).__name__,
+                endpoint,
+                code,
+                type(payload).__name__,
             )
         else:
             logger.warning(
                 "J-Quants %s: data キーがありません code=%s keys=%s",
-                endpoint, code, list(payload.keys()),
+                endpoint,
+                code,
+                list(payload.keys()),
             )
         return []
 
@@ -104,19 +110,24 @@ def _extract_data_records(payload: Dict[str, Any], endpoint: str, code: str) -> 
         if not records:
             logger.warning(
                 "J-Quants %s: data は list ですが dict 要素がありません code=%s",
-                endpoint, code,
+                endpoint,
+                code,
             )
         return records
 
     if isinstance(data, dict):
         if not data:
-            logger.info("J-Quants %s: data は空オブジェクトです code=%s", endpoint, code)
+            logger.info(
+                "J-Quants %s: data は空オブジェクトです code=%s", endpoint, code
+            )
             return []
         return [data]
 
     logger.warning(
         "J-Quants %s: data の型が想定外です code=%s type=%s",
-        endpoint, code, type(data).__name__,
+        endpoint,
+        code,
+        type(data).__name__,
     )
     return []
 
@@ -184,7 +195,9 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
             close_price = _safe_num(adj_c if adj_c is not None else latest.get("C"))
             logger.debug(
                 "J-Quants /equities/bars/daily %s: date=%s, close=%s",
-                jq_code, latest.get("Date"), close_price,
+                jq_code,
+                latest.get("Date"),
+                close_price,
             )
         else:
             logger.warning(
@@ -222,7 +235,9 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
         if stmt:
             logger.debug(
                 "J-Quants /fins/summary %s: CurPerType=%s, DiscDate=%s",
-                jq_code, stmt.get("CurPerType"), stmt.get("DiscDate"),
+                jq_code,
+                stmt.get("CurPerType"),
+                stmt.get("DiscDate"),
             )
 
             revenue = _safe_num(stmt.get("Sales"))
@@ -256,16 +271,12 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
                 dividend_yield = round(div_annual / close_price * 100, 4)
 
         else:
-            logger.warning(
-                "J-Quants /fins/summary: 銘柄 %s の財務データなし", jq_code
-            )
+            logger.warning("J-Quants /fins/summary: 銘柄 %s の財務データなし", jq_code)
 
     except ExternalAPIError:
         raise
     except Exception as exc:
-        logger.warning(
-            "J-Quants /fins/summary パースエラー %s: %s", jq_code, exc
-        )
+        logger.warning("J-Quants /fins/summary パースエラー %s: %s", jq_code, exc)
 
     # 4. 企業価値（EV
     # 有利子負債の明細は無料プランでは取得不可のため、以下の概算式を使用:

@@ -7,7 +7,6 @@ import type {
 } from "@/types/ai_consulting";
 
 // GUI管理銘柄
-
 export async function listStocks(): Promise<StocksResponse> {
   return fetchJson<StocksResponse>("/api/ai-consulting/stocks");
 }
@@ -41,7 +40,6 @@ export async function refreshAllStocks(): Promise<StocksResponse> {
 }
 
 // 既存エンドポイント
-
 export async function getAiConsultingPer(): Promise<PerResponse> {
   return fetchJson<PerResponse>("/api/ai-consulting/per");
 }

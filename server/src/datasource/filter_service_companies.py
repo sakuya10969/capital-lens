@@ -46,8 +46,7 @@ def resolve_input_file(file_path: Optional[Path | str] = None) -> Path:
             return candidate
 
     raise FileNotFoundError(
-        "JPX Excel file not found. Checked: "
-        f"{INPUT_FILE_XLSX}, {INPUT_FILE_XLS}"
+        "JPX Excel file not found. Checked: " f"{INPUT_FILE_XLSX}, {INPUT_FILE_XLS}"
     )
 
 
@@ -94,9 +93,8 @@ def normalize_industry_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def filter_target_industries(df: pd.DataFrame) -> pd.DataFrame:
-    industry_mask = (
-        df[COL_33_CODE].isin(TARGET_33_CODES)
-        | df[COL_33_NAME].isin(TARGET_33_NAMES)
+    industry_mask = df[COL_33_CODE].isin(TARGET_33_CODES) | df[COL_33_NAME].isin(
+        TARGET_33_NAMES
     )
     return df.loc[industry_mask].copy()
 

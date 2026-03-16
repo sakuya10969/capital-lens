@@ -10,15 +10,14 @@ import diskcache
 import pandas as pd
 import yfinance as yf
 
-
 DATASOURCE_DIR = Path(__file__).resolve().parent
 SOURCE_FILE = DATASOURCE_DIR / "data_j_service_companies.xlsx"
 OUTPUT_FILE_PATH = DATASOURCE_DIR / "data_j_service_ai_consulting_candidates.xlsx"
 CACHE_DIR = DATASOURCE_DIR / "yfinance_cache"
 
 # yfinance へのリクエストをバッチ処理してレート制限エラーを回避する
-FETCH_MAX_WORKERS = 5    # 同時リクエスト数
-FETCH_BATCH_SIZE = 50    # 1バッチあたりの銘柄数
+FETCH_MAX_WORKERS = 5  # 同時リクエスト数
+FETCH_BATCH_SIZE = 50  # 1バッチあたりの銘柄数
 FETCH_BATCH_SLEEP = 1.5  # バッチ間のスリープ秒数（未キャッシュ時のみ有効）
 CACHE_EXPIRE_SECONDS = 86400  # キャッシュ有効期間（24時間）
 
@@ -170,21 +169,23 @@ def _find_matched_keywords(text: str, keywords: list[str]) -> list[str]:
 def _is_it_consulting_company(company_name: str, profile: dict[str, Any]) -> bool:
     """
     Determine if a company is an IT consulting company.
-    
+
     Returns True only when:
     - consulting signal exists (in name, industry, or summary)
     - AND IT-related signal exists (in industry or summary)
     - AND AI-related signal exists (in summary)
-    
+
     This triple requirement significantly narrows down to AI × IT consulting companies.
     """
-    industry = (profile.get("industry") or "")
-    summary = (profile.get("summary") or "")
+    industry = profile.get("industry") or ""
+    summary = profile.get("summary") or ""
 
     combined = f"{company_name} {industry} {summary}"
 
     consulting_matches = _find_matched_keywords(combined, CONSULTING_KEYWORDS)
-    consulting_name_matches = _find_matched_keywords(company_name, CONSULTING_NAME_KEYWORDS_JA)
+    consulting_name_matches = _find_matched_keywords(
+        company_name, CONSULTING_NAME_KEYWORDS_JA
+    )
     consulting_score = len(set(consulting_matches + consulting_name_matches))
     if consulting_score < MIN_CONSULTING_MATCH_COUNT:
         return False
@@ -206,7 +207,9 @@ def _matched_ai_keywords(summary: str) -> list[str]:
     return _find_matched_keywords(summary, AI_KEYWORDS)
 
 
-def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.DataFrame:
+def extract_ai_consulting_companies(
+    output_file: Path = OUTPUT_FILE_PATH,
+) -> pd.DataFrame:
     source_df = load_service_companies()
     print(f"Loaded {len(source_df)} service companies from {SOURCE_FILE.name}")
 
@@ -217,18 +220,23 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
     total_batches = (len(tickers) + FETCH_BATCH_SIZE - 1) // FETCH_BATCH_SIZE
 
     with diskcache.Cache(str(CACHE_DIR)) as cache:
+
         def _fetch(ticker: str) -> Optional[dict[str, Any]]:
             return fetch_company_profile(ticker, cache=cache)
 
         for batch_idx in range(total_batches):
-            batch = tickers[batch_idx * FETCH_BATCH_SIZE : (batch_idx + 1) * FETCH_BATCH_SIZE]
+            batch = tickers[
+                batch_idx * FETCH_BATCH_SIZE : (batch_idx + 1) * FETCH_BATCH_SIZE
+            ]
             uncached = [t for t in batch if cache.get(t) is None]
 
             with ThreadPoolExecutor(max_workers=FETCH_MAX_WORKERS) as executor:
                 profiles.extend(executor.map(_fetch, batch))
 
-            print(f"  batch {batch_idx + 1}/{total_batches} done "
-                  f"({len(profiles)}/{len(tickers)}, uncached={len(uncached)})")
+            print(
+                f"  batch {batch_idx + 1}/{total_batches} done "
+                f"({len(profiles)}/{len(tickers)}, uncached={len(uncached)})"
+            )
 
             # 未キャッシュの銘柄があった場合のみバッチ間でスリープしてレート制限を回避
             if uncached and batch_idx < total_batches - 1:
@@ -258,17 +266,27 @@ def extract_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.
         if not matched:
             continue
 
-        screened_rows.append({
-            "company_name": company_name,
-            "yahoo_ticker": ticker,
-            "website": profile.get("website", ""),
-            "sector": profile.get("sector", ""),
-            "industry": profile.get("industry", ""),
-            "summary": summary,
-            "matched_ai_keywords": ", ".join(matched),
-        })
+        screened_rows.append(
+            {
+                "company_name": company_name,
+                "yahoo_ticker": ticker,
+                "website": profile.get("website", ""),
+                "sector": profile.get("sector", ""),
+                "industry": profile.get("industry", ""),
+                "summary": summary,
+                "matched_ai_keywords": ", ".join(matched),
+            }
+        )
 
-    _COLUMNS = ["company_name", "yahoo_ticker", "website", "sector", "industry", "summary", "matched_ai_keywords"]
+    _COLUMNS = [
+        "company_name",
+        "yahoo_ticker",
+        "website",
+        "sector",
+        "industry",
+        "summary",
+        "matched_ai_keywords",
+    ]
     result_df = (
         pd.DataFrame(screened_rows, columns=_COLUMNS).reset_index(drop=True)
         if screened_rows
@@ -312,20 +330,24 @@ def load_ai_consulting_tickers() -> list[dict[str, str]]:
         raise ValueError(f"AIコンサル候補銘柄ファイルが空です: {OUTPUT_FILE_PATH}")
 
     tickers = [
-        {"name": str(row["company_name"]).strip(), "symbol": str(row["yahoo_ticker"]).strip()}
+        {
+            "name": str(row["company_name"]).strip(),
+            "symbol": str(row["yahoo_ticker"]).strip(),
+        }
         for row in df.to_dict("records")
-        if str(row.get("company_name", "")).strip() and str(row.get("yahoo_ticker", "")).strip()
+        if str(row.get("company_name", "")).strip()
+        and str(row.get("yahoo_ticker", "")).strip()
     ]
 
     if not tickers:
-        raise ValueError(
-            f"有効な銘柄データが取得できませんでした: {OUTPUT_FILE_PATH}"
-        )
+        raise ValueError(f"有効な銘柄データが取得できませんでした: {OUTPUT_FILE_PATH}")
 
     return tickers
 
 
-def screen_ai_consulting_companies(output_file: Path = OUTPUT_FILE_PATH) -> pd.DataFrame:
+def screen_ai_consulting_companies(
+    output_file: Path = OUTPUT_FILE_PATH,
+) -> pd.DataFrame:
     return extract_ai_consulting_companies(output_file=output_file)
 
 

@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-
 SERVER_ROOT = Path(__file__).resolve().parents[2]
 if str(SERVER_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVER_ROOT))
@@ -30,9 +29,17 @@ def _print_record(record: StockRecord) -> None:
     print(f"銘柄コード: {record.code}")
     print(f"シンボル: {record.symbol}")
     print(f"企業名: {record.name or 'N/A'}")
-    print(f"企業価値 (EV): {record.enterprise_value:,.0f}" if record.enterprise_value is not None else "企業価値 (EV): N/A")
+    print(
+        f"企業価値 (EV): {record.enterprise_value:,.0f}"
+        if record.enterprise_value is not None
+        else "企業価値 (EV): N/A"
+    )
     print(f"企業価値 (概算): {_format_amount(record.enterprise_value)}")
-    print(f"時価総額: {record.market_cap:,.0f}" if record.market_cap is not None else "時価総額: N/A")
+    print(
+        f"時価総額: {record.market_cap:,.0f}"
+        if record.market_cap is not None
+        else "時価総額: N/A"
+    )
     print(f"時価総額 (概算): {_format_amount(record.market_cap)}")
     if record.updated_at is not None:
         print(f"取得時刻: {record.updated_at.isoformat()}")

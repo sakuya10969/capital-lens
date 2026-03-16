@@ -85,9 +85,9 @@ def extract_company_name_and_url(cell: Tag) -> Tuple[str, Optional[str]]:
         href = str(a_tag.get("href", "")).strip()
         company_url: Optional[str] = None
         if href:
-            href_without_query = href.split("?", maxsplit=1)[0].split(
-                "#", maxsplit=1
-            )[0]
+            href_without_query = href.split("?", maxsplit=1)[0].split("#", maxsplit=1)[
+                0
+            ]
             if not href_without_query.lower().endswith(".pdf"):
                 company_url = resolve_url(JPX_BASE_URL, href)
         return normalize_company_name(name), company_url
@@ -124,7 +124,9 @@ def parse_jpx_ipo_html(html: str) -> List[IpoItem]:
         ticker = cols1[2].get_text(strip=True)
         offering_price_raw = cols1[6].get_text(strip=True)
 
-        outline_pdf_url: Optional[str] = find_pdf_in_cell(cols1[3]) if len(cols1) > 3 else None
+        outline_pdf_url: Optional[str] = (
+            find_pdf_in_cell(cols1[3]) if len(cols1) > 3 else None
+        )
 
         market = ""
         if i + 1 < len(rows):

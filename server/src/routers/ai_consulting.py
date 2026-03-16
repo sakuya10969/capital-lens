@@ -26,6 +26,7 @@ def get_stocks_service() -> StocksService:
 
 # ── GUI管理銘柄 (stocks) ──────────────────────────────────────────────────────
 
+
 @router.get("/stocks", response_model=StocksResponse)
 def list_stocks(
     service: StocksService = Depends(get_stocks_service),
@@ -82,6 +83,7 @@ async def refresh_all_stocks(
 
 
 # ── 既存エンドポイント (後方互換) ─────────────────────────────────────────────
+
 
 @router.get("/per", response_model=PerResponse)
 async def get_per(

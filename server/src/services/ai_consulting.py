@@ -5,7 +5,10 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from src.datasource.screen_ai_consulting_service_companies import load_ai_consulting_tickers
+from src.datasource.screen_ai_consulting_service_companies import (
+    load_ai_consulting_tickers,
+)
+
 # 旧実装: yfinance 版の fetch_stock_record / normalize_symbol
 # from src.utils.yfinance import fetch_earnings_item, fetch_per_item, fetch_stock_record, normalize_symbol
 # 新実装: J-Quants V2 API ベース（2026-03 移行）
@@ -30,11 +33,11 @@ from src.schemas.ai_consulting import (
 
 logger = logging.getLogger(__name__)
 
-_JQUANTS_TIMEOUT = 30.0  # J-Quants V2 はネットワーク往復が複数あるため yfinance より長めに設定
-
-_STOCKS_JSON = (
-    Path(__file__).parent.parent / "datasource" / "stocks.json"
+_JQUANTS_TIMEOUT = (
+    30.0  # J-Quants V2 はネットワーク往復が複数あるため yfinance より長めに設定
 )
+
+_STOCKS_JSON = Path(__file__).parent.parent / "datasource" / "stocks.json"
 
 
 # GUI管理銘柄サービス
@@ -63,7 +66,9 @@ class StocksService:
     async def add_stock(self, code: str) -> StocksResponse:
         stocks = self._load()
         # codes_match は "7203" と "7203.T"（旧 yfinance 形式）を同一と判定する
-        if any(codes_match(s.code, code) or codes_match(s.symbol, code) for s in stocks):
+        if any(
+            codes_match(s.code, code) or codes_match(s.symbol, code) for s in stocks
+        ):
             return StocksResponse(stocks=stocks)
 
         record = await asyncio.wait_for(
@@ -76,7 +81,8 @@ class StocksService:
 
     async def delete_stock(self, code: str) -> StocksResponse:
         stocks = [
-            s for s in self._load()
+            s
+            for s in self._load()
             if not codes_match(s.code, code) and not codes_match(s.symbol, code)
         ]
         self._save(stocks)
