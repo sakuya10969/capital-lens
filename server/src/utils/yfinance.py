@@ -173,78 +173,87 @@ def normalize_symbol(code: str) -> str:
     return code.upper()
 
 
-def fetch_stock_record(code: str) -> StockRecord:
-    """銘柄コードをもとに yfinance から企業情報・財務指標を取得する。欠損は None で返す。"""
-    symbol = normalize_symbol(code)
-    try:
-        t = yf.Ticker(symbol)
-        info: Dict[str, Any] = t.info or {}
-    except Exception as exc:
-        logger.warning("yfinance info error %s: %s", symbol, exc)
-        return StockRecord(code=code, symbol=symbol, updated_at=datetime.utcnow())
+# ==============================================================================
+# 旧実装 / 一時退避 / 将来復帰の可能性あり
+# ------------------------------------------------------------------------------
+# fetch_stock_record は J-Quants API ベースの実装（utils/jquants.py）に移行済み。
+# yfinance 版の実装は削除せずここにコメントアウトとして保存する。
+# 復帰する場合は services/ai_consulting.py のインポートを以下に戻すこと:
+#   from src.utils.yfinance import fetch_stock_record_yfinance as fetch_stock_record, normalize_symbol
+# ==============================================================================
 
-    name: Optional[str] = info.get("longName") or info.get("shortName") or None
-    enterprise_value = safe_float(info.get("enterpriseValue"))
-    market_cap = safe_float(info.get("marketCap"))
-    per = safe_float(info.get("trailingPE"))
-    revenue = safe_float(info.get("totalRevenue"))
-    net_income = safe_float(info.get("netIncomeToCommon"))
-    dividend_yield = safe_float(info.get("dividendYield"))
-    roe = safe_float(info.get("returnOnEquity"))
-
-    # 営業利益: info に無い場合は income_stmt から補完
-    operating_income: Optional[float] = safe_float(info.get("operatingIncome"))
-    if operating_income is None:
-        try:
-            fin = t.income_stmt
-            if fin is not None and not fin.empty:
-                for key in ("Operating Income", "Total Operating Income As Reported"):
-                    if key in fin.index:
-                        operating_income = safe_float(fin.loc[key].iloc[0])
-                        break
-        except Exception as exc:
-            logger.debug("income_stmt error %s: %s", symbol, exc)
-
-    # 自己資本比率: balance_sheet から取得
-    equity_ratio: Optional[float] = None
-    try:
-        bs = t.balance_sheet
-        if bs is not None and not bs.empty:
-            total_equity: Optional[float] = None
-            total_assets: Optional[float] = None
-            for key in (
-                "Stockholders Equity",
-                "Total Stockholder Equity",
-                "Total Equity Gross Minority Interest",
-                "Common Stock Equity",
-            ):
-                if key in bs.index:
-                    total_equity = safe_float(bs.loc[key].iloc[0])
-                    break
-            for key in ("Total Assets",):
-                if key in bs.index:
-                    total_assets = safe_float(bs.loc[key].iloc[0])
-                    break
-            if total_equity is not None and total_assets and total_assets != 0:
-                equity_ratio = round(total_equity / total_assets, 4)
-    except Exception as exc:
-        logger.debug("balance_sheet error %s: %s", symbol, exc)
-
-    return StockRecord(
-        code=code,
-        symbol=symbol,
-        name=name,
-        enterprise_value=enterprise_value,
-        market_cap=market_cap,
-        per=per,
-        revenue=revenue,
-        operating_income=operating_income,
-        net_income=net_income,
-        dividend_yield=dividend_yield,
-        roe=roe,
-        equity_ratio=equity_ratio,
-        updated_at=datetime.utcnow(),
-    )
+# def fetch_stock_record_yfinance(code: str) -> StockRecord:
+#     """【旧実装・一時退避】銘柄コードをもとに yfinance から企業情報・財務指標を取得する。欠損は None で返す。"""
+#     symbol = normalize_symbol(code)
+#     try:
+#         t = yf.Ticker(symbol)
+#         info: Dict[str, Any] = t.info or {}
+#     except Exception as exc:
+#         logger.warning("yfinance info error %s: %s", symbol, exc)
+#         return StockRecord(code=code, symbol=symbol, updated_at=datetime.utcnow())
+#
+#     name: Optional[str] = info.get("longName") or info.get("shortName") or None
+#     enterprise_value = safe_float(info.get("enterpriseValue"))
+#     market_cap = safe_float(info.get("marketCap"))
+#     per = safe_float(info.get("trailingPE"))
+#     revenue = safe_float(info.get("totalRevenue"))
+#     net_income = safe_float(info.get("netIncomeToCommon"))
+#     dividend_yield = safe_float(info.get("dividendYield"))
+#     roe = safe_float(info.get("returnOnEquity"))
+#
+#     # 営業利益: info に無い場合は income_stmt から補完
+#     operating_income: Optional[float] = safe_float(info.get("operatingIncome"))
+#     if operating_income is None:
+#         try:
+#             fin = t.income_stmt
+#             if fin is not None and not fin.empty:
+#                 for key in ("Operating Income", "Total Operating Income As Reported"):
+#                     if key in fin.index:
+#                         operating_income = safe_float(fin.loc[key].iloc[0])
+#                         break
+#         except Exception as exc:
+#             logger.debug("income_stmt error %s: %s", symbol, exc)
+#
+#     # 自己資本比率: balance_sheet から取得
+#     equity_ratio: Optional[float] = None
+#     try:
+#         bs = t.balance_sheet
+#         if bs is not None and not bs.empty:
+#             total_equity: Optional[float] = None
+#             total_assets: Optional[float] = None
+#             for key in (
+#                 "Stockholders Equity",
+#                 "Total Stockholder Equity",
+#                 "Total Equity Gross Minority Interest",
+#                 "Common Stock Equity",
+#             ):
+#                 if key in bs.index:
+#                     total_equity = safe_float(bs.loc[key].iloc[0])
+#                     break
+#             for key in ("Total Assets",):
+#                 if key in bs.index:
+#                     total_assets = safe_float(bs.loc[key].iloc[0])
+#                     break
+#             if total_equity is not None and total_assets and total_assets != 0:
+#                 equity_ratio = round(total_equity / total_assets, 4)
+#     except Exception as exc:
+#         logger.debug("balance_sheet error %s: %s", symbol, exc)
+#
+#     return StockRecord(
+#         code=code,
+#         symbol=symbol,
+#         name=name,
+#         enterprise_value=enterprise_value,
+#         market_cap=market_cap,
+#         per=per,
+#         revenue=revenue,
+#         operating_income=operating_income,
+#         net_income=net_income,
+#         dividend_yield=dividend_yield,
+#         roe=roe,
+#         equity_ratio=equity_ratio,
+#         updated_at=datetime.utcnow(),
+#     )
 
 
 def fetch_market_item(name: str, ticker: str) -> Optional[MarketItem]:
