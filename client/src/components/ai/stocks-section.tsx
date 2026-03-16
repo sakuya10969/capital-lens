@@ -20,7 +20,7 @@ import {
 } from "@/lib/api/ai-consulting";
 import type { StockRecord, StocksResponse } from "@/types/ai_consulting";
 
-// ── ユーティリティ ─────────────────────────────────────────────────────────────
+//ユーティリティ
 
 /** 億円 or 億ドル表記 */
 function fmtBillion(v: number | null): string {
@@ -45,7 +45,7 @@ function fmtNum(v: number | null, digits = 1): string {
   });
 }
 
-// ── コンポーネント ─────────────────────────────────────────────────────────────
+// コンポーネント
 
 export function StocksSection() {
   const [stocks, setStocks] = useState<StockRecord[]>([]);
@@ -260,7 +260,7 @@ export function StocksSection() {
 
       {/* 最終更新時刻 */}
       {stocks.length > 0 && stocks[0].updated_at && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-black">
           最終更新: {new Date(stocks[0].updated_at).toLocaleString("ja-JP")}
         </p>
       )}

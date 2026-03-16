@@ -17,10 +17,10 @@ export function MarketOverview({ data }: { data: MarketOverviewResponse }) {
         <h1 className="text-xl font-bold text-gray-900">
           資本市場ダッシュボード
         </h1>
-        <span className="text-xs text-gray-400">更新: {updatedAt} JST</span>
+        <span className="text-xs text-black">更新: {updatedAt} JST</span>
       </div>
       {data.summary && (
-        <p className="mb-5 text-sm text-gray-600 leading-relaxed border-l-2 border-blue-300 pl-3">
+        <p className="mb-5 text-sm text-black leading-relaxed border-l-2 border-blue-300 pl-3">
           {data.summary}
         </p>
       )}
