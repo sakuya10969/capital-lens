@@ -7,7 +7,7 @@ from pydantic import BaseModel
 # Stocks (GUI管理銘柄)
 class StockRecord(BaseModel):
     code: str                             # 入力コード (例: "7203" or "7203.T")
-    symbol: str                           # yfinanceシンボル (例: "7203.T")
+    symbol: str                           # 正規化済みコード: J-Quants形式 (例: "7203") / 旧yfinance形式 (例: "7203.T")
     name: Optional[str] = None            # 企業名
     enterprise_value: Optional[float] = None  # 企業価値
     market_cap: Optional[float] = None    # 時価総額
