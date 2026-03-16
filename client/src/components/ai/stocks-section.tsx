@@ -181,12 +181,12 @@ export function StocksSection() {
         </p>
       ) : (
         <div className="space-y-2">
-          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
+          {/* <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
             企業価値は概算です。J-Quants
             APIの無料プランでは有利子負債明細を取得できないため、
             時価総額に負債合計ベースの近似値を加味して算出しています。
             買掛金などの非有利子負債も含まれうるため、実際の企業価値より大きく出る可能性があります。
-          </p>
+          </p> */}
           <div className="rounded-lg border overflow-x-auto">
             <Table>
               <TableHeader>
