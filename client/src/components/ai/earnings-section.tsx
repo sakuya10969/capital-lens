@@ -50,7 +50,8 @@ export function EarningsSection() {
 
       <div>
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
-          決算予定銘柄 <span className="text-blue-600">({data.upcoming.length}件)</span>
+          決算予定銘柄{" "}
+          <span className="text-blue-600">({data.upcoming.length}件)</span>
         </h3>
         {data.upcoming.length === 0 ? (
           <p className="text-sm text-gray-400 py-4 text-center">
@@ -82,7 +83,8 @@ export function EarningsSection() {
 
       <div>
         <h3 className="text-sm font-semibold text-gray-700 mb-2">
-          決算日未取得 / 範囲外 <span className="text-gray-400">({data.unknown.length}件)</span>
+          決算日未取得 / 範囲外{" "}
+          <span className="text-gray-400">({data.unknown.length}件)</span>
         </h3>
         {data.unknown.length > 0 && (
           <div className="rounded-lg border border-gray-200 overflow-hidden">

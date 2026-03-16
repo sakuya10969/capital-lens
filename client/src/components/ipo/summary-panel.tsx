@@ -70,17 +70,17 @@ export function SummaryPanel({
       <p className="text-sm text-gray-700 leading-relaxed">{data.summary}</p>
       <div className="mt-1 space-y-1">
         {outlinePdfUrl && (
-              <a
-                href={outlinePdfUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-              >
-                <ExternalLink className="w-4 h-4" />
-                会社概要の参照元（PDF）
-              </a>
-            )}
-        </div>
+          <a
+            href={outlinePdfUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            <ExternalLink className="w-4 h-4" />
+            会社概要の参照元（PDF）
+          </a>
+        )}
+      </div>
     </div>
   );
 }

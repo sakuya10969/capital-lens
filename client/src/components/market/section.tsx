@@ -2,7 +2,13 @@ import type { MarketItem } from "@/types/market";
 
 import { MarketCard } from "@/components/market/market-card";
 
-export function Section({ title, items }: { title: string; items: MarketItem[] }) {
+export function Section({
+  title,
+  items,
+}: {
+  title: string;
+  items: MarketItem[];
+}) {
   if (items.length === 0) return null;
   return (
     <div>

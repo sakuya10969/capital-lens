@@ -13,7 +13,7 @@ export function ChangeIndicator({
         <TrendingUp size={14} />
         {change >= 1000
           ? `+${change.toLocaleString("ja-JP", { maximumFractionDigits: 0 })}`
-          : `+${change.toFixed(2)}`} {" "}
+          : `+${change.toFixed(2)}`}{" "}
         (+{changePercent.toFixed(2)}%)
       </span>
     );

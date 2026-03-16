@@ -29,12 +29,16 @@ export function EarningsRow({ item }: { item: EarningsItem }) {
         <TableCell className="text-gray-700">
           {item.earnings_date ?? "—"}
         </TableCell>
-        <TableCell className={`text-right ${changeColor(item.price_change_5d)}`}>
+        <TableCell
+          className={`text-right ${changeColor(item.price_change_5d)}`}
+        >
           {item.price_change_5d != null
             ? `${item.price_change_5d > 0 ? "+" : ""}${fmt(item.price_change_5d)}%`
             : "—"}
         </TableCell>
-        <TableCell className={`text-right ${changeColor(item.price_change_1m)}`}>
+        <TableCell
+          className={`text-right ${changeColor(item.price_change_1m)}`}
+        >
           {item.price_change_1m != null
             ? `${item.price_change_1m > 0 ? "+" : ""}${fmt(item.price_change_1m)}%`
             : "—"}

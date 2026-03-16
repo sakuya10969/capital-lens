@@ -1,9 +1,6 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-import {
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/formatters";
 import type { LoadState } from "@/types/common";

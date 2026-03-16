@@ -145,7 +145,9 @@ export function IpoTable() {
                   key={`${item.ticker}-${item.listing_date}`}
                   item={item}
                   isOpen={openRows.has(item.ticker)}
-                  summaryState={summaries.get(item.ticker) ?? { status: "idle" }}
+                  summaryState={
+                    summaries.get(item.ticker) ?? { status: "idle" }
+                  }
                   onToggle={handleToggle}
                   onRetry={fetchSummary}
                 />
