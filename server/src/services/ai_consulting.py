@@ -6,7 +6,15 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.datasource.screen_ai_consulting_service_companies import load_ai_consulting_tickers
-from src.utils.yfinance import fetch_earnings_item, fetch_per_item, fetch_stock_record, normalize_symbol
+# 旧実装: yfinance 版の fetch_stock_record / normalize_symbol
+# from src.utils.yfinance import fetch_earnings_item, fetch_per_item, fetch_stock_record, normalize_symbol
+# 新実装: J-Quants V2 API ベース（2026-03 移行）
+from src.utils.jquants import (
+    codes_match,
+    fetch_stock_record_jquants as fetch_stock_record,
+    normalize_code_jquants as normalize_symbol,
+)
+from src.utils.yfinance import fetch_earnings_item, fetch_per_item
 
 from src.schemas.ai_consulting import (
     AddStockRequest,
@@ -22,7 +30,7 @@ from src.schemas.ai_consulting import (
 
 logger = logging.getLogger(__name__)
 
-_YFINANCE_TIMEOUT = 15.0
+_JQUANTS_TIMEOUT = 30.0  # J-Quants V2 はネットワーク往復が複数あるため yfinance より長めに設定
 
 _STOCKS_JSON = (
     Path(__file__).parent.parent / "datasource" / "stocks.json"
@@ -54,32 +62,36 @@ class StocksService:
 
     async def add_stock(self, code: str) -> StocksResponse:
         stocks = self._load()
-        symbol = normalize_symbol(code)
-        if any(s.symbol == symbol for s in stocks):
+        # codes_match は "7203" と "7203.T"（旧 yfinance 形式）を同一と判定する
+        if any(codes_match(s.code, code) or codes_match(s.symbol, code) for s in stocks):
             return StocksResponse(stocks=stocks)
 
         record = await asyncio.wait_for(
             asyncio.to_thread(fetch_stock_record, code),
-            timeout=_YFINANCE_TIMEOUT,
+            timeout=_JQUANTS_TIMEOUT,
         )
         stocks.append(record)
         self._save(stocks)
         return StocksResponse(stocks=stocks)
 
     async def delete_stock(self, code: str) -> StocksResponse:
-        symbol = normalize_symbol(code)
-        stocks = [s for s in self._load() if s.symbol != symbol and s.code != code]
+        stocks = [
+            s for s in self._load()
+            if not codes_match(s.code, code) and not codes_match(s.symbol, code)
+        ]
         self._save(stocks)
         return StocksResponse(stocks=stocks)
 
     async def refresh_stock(self, code: str) -> StocksResponse:
         stocks = self._load()
-        symbol = normalize_symbol(code)
         record = await asyncio.wait_for(
             asyncio.to_thread(fetch_stock_record, code),
-            timeout=_YFINANCE_TIMEOUT,
+            timeout=_JQUANTS_TIMEOUT,
         )
-        stocks = [record if (s.symbol == symbol or s.code == code) else s for s in stocks]
+        stocks = [
+            record if (codes_match(s.code, code) or codes_match(s.symbol, code)) else s
+            for s in stocks
+        ]
         self._save(stocks)
         return StocksResponse(stocks=stocks)
 
@@ -92,7 +104,7 @@ class StocksService:
             *[
                 asyncio.wait_for(
                     asyncio.to_thread(fetch_stock_record, s.code),
-                    timeout=_YFINANCE_TIMEOUT,
+                    timeout=_JQUANTS_TIMEOUT,
                 )
                 for s in stocks
             ],
