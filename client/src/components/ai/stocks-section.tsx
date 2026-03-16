@@ -238,39 +238,43 @@ export function StocksSection() {
                       {s.symbol}
                     </TableCell>
                     <TableCell className="font-medium text-black whitespace-nowrap">
-                      <div>{s.name ?? "—"}</div>
-                      <div className="mt-0.5 space-y-0 text-[10px] leading-4 text-gray-600">
-                        {/* <div>取得: {fmtDateTime(s.fetched_at)}</div> */}
-                        <div>株価: {fmtDate(s.price_as_of)}</div>
-                        <div>財務: {fmtDate(s.financials_as_of)}</div>
-                      </div>
+                      {s.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtBillion(s.enterprise_value)}
+                      <div>{fmtBillion(s.enterprise_value)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.price_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtBillion(s.market_cap)}
+                      <div>{fmtBillion(s.market_cap)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.price_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {s.per != null ? `${fmtNum(s.per)}倍` : "—"}
+                      <div>{s.per != null ? `${fmtNum(s.per)}倍` : "—"}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.price_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtBillion(s.revenue)}
+                      <div>{fmtBillion(s.revenue)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.financials_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtBillion(s.operating_income)}
+                      <div>{fmtBillion(s.operating_income)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.financials_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtBillion(s.net_income)}
+                      <div>{fmtBillion(s.net_income)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.financials_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtPct(s.dividend_yield)}
+                      <div>{fmtPct(s.dividend_yield)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.price_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtPct(s.roe)}
+                      <div>{fmtPct(s.roe)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.financials_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right text-black">
-                      {fmtPct(s.equity_ratio)}
+                      <div>{fmtPct(s.equity_ratio)}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5">{fmtDate(s.financials_as_of)}</div>
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap">
                       <div className="flex justify-end gap-1">
