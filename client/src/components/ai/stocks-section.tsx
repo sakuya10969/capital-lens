@@ -32,7 +32,6 @@ import {
 import type { StockRecord, StocksResponse } from "@/types/ai_consulting";
 
 //ユーティリティ
-
 /** 億円 or 億ドル表記 */
 function fmtBillion(v: number | null): string {
   if (v == null) return "—";
@@ -57,7 +56,6 @@ function fmtNum(v: number | null, digits = 1): string {
 }
 
 // コンポーネント
-
 export function StocksSection() {
   const [stocks, setStocks] = useState<StockRecord[]>([]);
   const [loading, setLoading] = useState(true);

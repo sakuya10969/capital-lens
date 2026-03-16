@@ -37,11 +37,7 @@ from src.schemas.ai_consulting import StockRecord
 logger = logging.getLogger(__name__)
 
 
-# ------------------------------------------------------------------
 # コード正規化
-# ------------------------------------------------------------------
-
-
 def normalize_code_jquants(code: str) -> str:
     """J-Quants API 用に銘柄コードを正規化する。
 
@@ -64,11 +60,7 @@ def codes_match(a: str, b: str) -> bool:
     return normalize_code_jquants(a).upper() == normalize_code_jquants(b).upper()
 
 
-# ------------------------------------------------------------------
 # 内部ヘルパー
-# ------------------------------------------------------------------
-
-
 def _safe_num(val: Any) -> Optional[float]:
     """None・空文字・NaN を None に変換して float を返す。"""
     if val is None or val == "":
@@ -142,11 +134,7 @@ def _select_fy_statement(statements: List[Dict[str, Any]]) -> Optional[Dict[str,
     return target[0]
 
 
-# ------------------------------------------------------------------
 # メイン取得関数
-# ------------------------------------------------------------------
-
-
 def fetch_stock_record_jquants(code: str) -> StockRecord:
     """J-Quants V2 API から銘柄情報・株価・財務指標を取得して StockRecord を返す。
 
@@ -165,7 +153,7 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
     jq_code = normalize_code_jquants(code)
     now = datetime.utcnow()
 
-    # ---- 1. 企業基本情報 (/equities/master) --------------------------------
+    # 1. 企業基本情報 (/equities/master)
     # 旧: /v1/listed/info → 新: /v2/equities/master
     # V2 フィールド: CoName（旧: CompanyName）, CoNameEn（旧: CompanyNameEnglish）
     name: Optional[str] = None
@@ -183,7 +171,7 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
     except Exception as exc:
         logger.warning("J-Quants /equities/master パースエラー %s: %s", jq_code, exc)
 
-    # ---- 2. 直近株価 (/equities/bars/daily) --------------------------------
+    # 2. 直近株価 (/equities/bars/daily)
     # 旧: /v1/prices/daily_quotes → 新: /v2/equities/bars/daily
     # V2 フィールド: AdjC（調整済み終値, 旧: AdjustmentClose）, C（調整前終値, 旧: Close）
     close_price: Optional[float] = None
@@ -209,7 +197,7 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
             "J-Quants /equities/bars/daily パースエラー %s: %s", jq_code, exc
         )
 
-    # ---- 3. 財務サマリ (/fins/summary) -------------------------------------
+    # 3. 財務サマリ (/fins/summary)
     # 旧: /v1/fins/statements → 新: /v2/fins/summary
     # V2 フィールド名はすべて短縮形（旧名 → 新名）:
     #   NetSales → Sales, OperatingProfit → OP, Profit → NP
@@ -279,7 +267,7 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
             "J-Quants /fins/summary パースエラー %s: %s", jq_code, exc
         )
 
-    # ---- 4. 企業価値（EV） -------------------------------------------------
+    # 4. 企業価値（EV
     # 有利子負債の明細は無料プランでは取得不可のため、以下の概算式を使用:
     #   EV = 時価総額 + 負債合計（TA - Eq）- 現金及び現金同等物（CashEq）
     # 負債合計には有利子負債以外（買掛金等）も含まれるため過大評価になりやすい点に注意。
