@@ -18,13 +18,14 @@ logger = logging.getLogger(__name__)
 
 def fetch_stock_record(code: str) -> StockRecord:
     """銘柄コードをもとに yfinance から企業情報・財務指標を取得する。欠損は None で返す。"""
+    fetched_at = datetime.utcnow()
     symbol = normalize_symbol(code)
     try:
         t = yf.Ticker(symbol)
         info: Dict[str, Any] = t.info or {}
     except Exception as exc:
         logger.warning("yfinance info error %s: %s", symbol, exc)
-        return StockRecord(code=code, symbol=symbol, updated_at=datetime.utcnow())
+        return StockRecord(code=code, symbol=symbol, updated_at=fetched_at, fetched_at=fetched_at)
 
     name: Optional[str] = info.get("longName") or info.get("shortName") or None
     enterprise_value = safe_float(info.get("enterpriseValue"))
@@ -34,6 +35,17 @@ def fetch_stock_record(code: str) -> StockRecord:
     net_income = safe_float(info.get("netIncomeToCommon"))
     dividend_yield = safe_float(info.get("dividendYield"))
     roe = safe_float(info.get("returnOnEquity"))
+
+    # 株価基準日時: regularMarketTime は Unix タイムスタンプ
+    price_as_of: Optional[datetime] = None
+    reg_market_time = info.get("regularMarketTime")
+    if reg_market_time is not None:
+        try:
+            price_as_of = datetime.utcfromtimestamp(int(reg_market_time))
+        except Exception as exc:
+            logger.debug("price_as_of parse error %s: %s", symbol, exc)
+
+    financials_as_of: Optional[date] = None
 
     # 営業利益: info に無い場合は income_stmt から補完
     operating_income: Optional[float] = safe_float(info.get("operatingIncome"))
@@ -70,6 +82,13 @@ def fetch_stock_record(code: str) -> StockRecord:
                     break
             if total_equity is not None and total_assets and total_assets != 0:
                 equity_ratio = round(total_equity / total_assets, 4)
+            # 財務基準日: balance_sheet の最新列（期末日）
+            if len(bs.columns) > 0:
+                col = bs.columns[0]
+                try:
+                    financials_as_of = col.date() if hasattr(col, "date") else date.fromisoformat(str(col)[:10])
+                except Exception as exc:
+                    logger.debug("financials_as_of parse error %s: %s", symbol, exc)
     except Exception as exc:
         logger.debug("balance_sheet error %s: %s", symbol, exc)
 
@@ -86,7 +105,10 @@ def fetch_stock_record(code: str) -> StockRecord:
         dividend_yield=dividend_yield,
         roe=roe,
         equity_ratio=equity_ratio,
-        updated_at=datetime.utcnow(),
+        updated_at=fetched_at,
+        fetched_at=fetched_at,
+        price_as_of=price_as_of,
+        financials_as_of=financials_as_of,
     )
 
 

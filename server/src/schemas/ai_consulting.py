@@ -19,6 +19,9 @@ class StockRecord(BaseModel):
     roe: Optional[float] = None  # ROE
     equity_ratio: Optional[float] = None  # 自己資本比率
     updated_at: Optional[datetime] = None
+    fetched_at: Optional[datetime] = None  # サーバーがyfinanceから取得した日時
+    price_as_of: Optional[datetime] = None  # 株価・時価総額などの基準日時
+    financials_as_of: Optional[date] = None  # 財務系データの基準日
 
 
 class AddStockRequest(BaseModel):
