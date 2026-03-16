@@ -1,138 +1,29 @@
 import asyncio
-import json
 import logging
 from datetime import date, datetime, timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Tuple
 
 from src.datasource.screen_ai_consulting_service_companies import (
     load_ai_consulting_tickers,
 )
-
-# 旧実装: yfinance 版の fetch_stock_record / normalize_symbol
-# from src.utils.yfinance import fetch_earnings_item, fetch_per_item, fetch_stock_record, normalize_symbol
-# 新実装: J-Quants V2 API ベース（2026-03 移行）
-from src.utils.jquants import (
-    codes_match,
-    fetch_stock_record_jquants as fetch_stock_record,
-    normalize_code_jquants as normalize_symbol,
-)
-from src.utils.yfinance import fetch_earnings_item, fetch_per_item
-
 from src.schemas.ai_consulting import (
-    AddStockRequest,
     EarningsItem,
     EarningsResponse,
     EarningsWindow,
     PerItem,
     PerResponse,
     ReportResponse,
-    StockRecord,
-    StocksResponse,
 )
+from src.utils.stock_data import fetch_earnings_item, fetch_per_item
 
 logger = logging.getLogger(__name__)
 
-_JQUANTS_TIMEOUT = (
-    30.0  # J-Quants V2 はネットワーク往復が複数あるため yfinance より長めに設定
-)
-
-_STOCKS_JSON = Path(__file__).parent.parent / "datasource" / "stocks.json"
+_YFINANCE_TIMEOUT = 15.0
 
 
-# GUI管理銘柄サービス
-class StocksService:
-
-    def _load(self) -> List[StockRecord]:
-        if not _STOCKS_JSON.exists():
-            return []
-        try:
-            data = json.loads(_STOCKS_JSON.read_text(encoding="utf-8"))
-            return [StockRecord(**item) for item in data.get("stocks", [])]
-        except Exception as exc:
-            logger.warning("stocks.json 読込失敗: %s", exc)
-            return []
-
-    def _save(self, stocks: List[StockRecord]) -> None:
-        _STOCKS_JSON.parent.mkdir(parents=True, exist_ok=True)
-        payload = {"stocks": [s.model_dump(mode="json") for s in stocks]}
-        _STOCKS_JSON.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
-
-    def list_stocks(self) -> StocksResponse:
-        return StocksResponse(stocks=self._load())
-
-    async def add_stock(self, code: str) -> StocksResponse:
-        stocks = self._load()
-        # codes_match は "7203" と "7203.T"（旧 yfinance 形式）を同一と判定する
-        if any(
-            codes_match(s.code, code) or codes_match(s.symbol, code) for s in stocks
-        ):
-            return StocksResponse(stocks=stocks)
-
-        record = await asyncio.wait_for(
-            asyncio.to_thread(fetch_stock_record, code),
-            timeout=_JQUANTS_TIMEOUT,
-        )
-        stocks.append(record)
-        self._save(stocks)
-        return StocksResponse(stocks=stocks)
-
-    async def delete_stock(self, code: str) -> StocksResponse:
-        stocks = [
-            s
-            for s in self._load()
-            if not codes_match(s.code, code) and not codes_match(s.symbol, code)
-        ]
-        self._save(stocks)
-        return StocksResponse(stocks=stocks)
-
-    async def refresh_stock(self, code: str) -> StocksResponse:
-        stocks = self._load()
-        record = await asyncio.wait_for(
-            asyncio.to_thread(fetch_stock_record, code),
-            timeout=_JQUANTS_TIMEOUT,
-        )
-        stocks = [
-            record if (codes_match(s.code, code) or codes_match(s.symbol, code)) else s
-            for s in stocks
-        ]
-        self._save(stocks)
-        return StocksResponse(stocks=stocks)
-
-    async def refresh_all(self) -> StocksResponse:
-        stocks = self._load()
-        if not stocks:
-            return StocksResponse(stocks=[])
-
-        updated: List[StockRecord] = await asyncio.gather(
-            *[
-                asyncio.wait_for(
-                    asyncio.to_thread(fetch_stock_record, s.code),
-                    timeout=_JQUANTS_TIMEOUT,
-                )
-                for s in stocks
-            ],
-            return_exceptions=True,
-        )
-
-        result: List[StockRecord] = []
-        for original, record in zip(stocks, updated):
-            if isinstance(record, StockRecord):
-                result.append(record)
-            else:
-                logger.warning("refresh_all 失敗 %s: %s", original.code, record)
-                result.append(original)
-
-        self._save(result)
-        return StocksResponse(stocks=result)
-
-
-# Service
 class AiConsultingService:
 
-    def _tickers(self) -> List[Dict[str, str]]:
+    def _tickers(self) -> List[dict]:
         return load_ai_consulting_tickers()
 
     async def get_per(self) -> PerResponse:
@@ -197,7 +88,6 @@ class AiConsultingService:
             self.get_earnings(window_days),
         )
 
-        # text report
         lines: List[str] = ["【AI×コンサル銘柄分析レポート】\n"]
 
         # PER

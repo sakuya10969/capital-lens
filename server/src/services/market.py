@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from src.utils.yfinance import fetch_market_item
+from src.utils.market_data import fetch_market_item
 from src.utils.llm import summarize_market_with_llm
 
 from src.core.config import settings
