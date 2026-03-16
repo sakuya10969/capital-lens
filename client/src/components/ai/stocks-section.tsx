@@ -293,13 +293,6 @@ export function StocksSection() {
           </div>
         </div>
       )}
-
-      {/* 最終更新時刻 */}
-      {stocks.length > 0 && stocks[0].updated_at && (
-        <p className="text-xs text-black">
-          最終更新: {new Date(stocks[0].updated_at).toLocaleString("ja-JP")}
-        </p>
-      )}
     </div>
   );
 }
