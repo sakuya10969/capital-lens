@@ -224,6 +224,8 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
     dividend_yield: Optional[float] = None
     roe: Optional[float] = None
     equity_ratio: Optional[float] = None
+    stmt: Optional[Dict[str, Any]] = None
+    equity: Optional[float] = None
     try:
         summary_resp = jquants_client.get("/fins/summary", code=jq_code)
         summary_list = _extract_data_records(summary_resp, "/fins/summary", jq_code)
@@ -278,8 +280,19 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
         )
 
     # ---- 4. 企業価値（EV） -------------------------------------------------
-    # 無料プランでは /fins/details を利用できないため、EV は未提供とする。
+    # 有利子負債の明細は無料プランでは取得不可のため、以下の概算式を使用:
+    #   EV = 時価総額 + 負債合計（TA - Eq）- 現金及び現金同等物（CashEq）
+    # 負債合計には有利子負債以外（買掛金等）も含まれるため過大評価になりやすい点に注意。
     enterprise_value: Optional[float] = None
+    if stmt:
+        total_assets = _safe_num(stmt.get("TA"))
+        cash_eq = _safe_num(stmt.get("CashEq"))
+        # equity は上記ブロックで取得済み
+        if market_cap is not None and total_assets is not None and equity is not None:
+            total_debt = total_assets - equity  # 負債合計（概算）
+            ev = market_cap + total_debt - (cash_eq or 0.0)
+            if ev > 0:
+                enterprise_value = round(ev, 0)
 
     return StockRecord(
         code=code,
