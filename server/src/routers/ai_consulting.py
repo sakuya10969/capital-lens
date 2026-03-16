@@ -9,7 +9,8 @@ from src.schemas.ai_consulting import (
     ReportResponse,
     StocksResponse,
 )
-from src.services.ai_consulting import AiConsultingService, StocksService
+from src.services.ai_consulting import AiConsultingService
+from src.services.stocks import StocksService
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +25,7 @@ def get_stocks_service() -> StocksService:
     return StocksService()
 
 
-# ── GUI管理銘柄 (stocks) ──────────────────────────────────────────────────────
-
-
+# GUI管理銘柄 (stocks)
 @router.get("/stocks", response_model=StocksResponse)
 def list_stocks(
     service: StocksService = Depends(get_stocks_service),
@@ -82,9 +81,7 @@ async def refresh_all_stocks(
         raise HTTPException(status_code=500, detail=str(exc))
 
 
-# ── 既存エンドポイント (後方互換) ─────────────────────────────────────────────
-
-
+# 既存エンドポイント
 @router.get("/per", response_model=PerResponse)
 async def get_per(
     service: AiConsultingService = Depends(get_service),
