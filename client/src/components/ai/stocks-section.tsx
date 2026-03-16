@@ -58,12 +58,12 @@ function fmtNum(v: number | null, digits = 1): string {
 // コンポーネント
 export function StocksSection() {
   const [stocks, setStocks] = useState<StockRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [adding, setAdding] = useState(false);
-  const [refreshingAll, setRefreshingAll] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [adding, setAdding] = useState<boolean>(false);
+  const [refreshingAll, setRefreshingAll] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
