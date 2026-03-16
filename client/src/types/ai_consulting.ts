@@ -13,6 +13,9 @@ export interface StockRecord {
   roe: number | null;
   equity_ratio: number | null;
   updated_at: string | null;
+  fetched_at?: string | null;
+  price_as_of?: string | null;
+  financials_as_of?: string | null;
 }
 
 export interface StocksResponse {

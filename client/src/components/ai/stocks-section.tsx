@@ -55,6 +55,32 @@ function fmtNum(v: number | null, digits = 1): string {
   });
 }
 
+function fmtDateTime(v: string | null | undefined): string {
+  if (!v) return "—";
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Tokyo",
+  });
+}
+
+function fmtDate(v: string | null | undefined): string {
+  if (!v) return "—";
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Tokyo",
+  });
+}
+
 // コンポーネント
 export function StocksSection() {
   const [stocks, setStocks] = useState<StockRecord[]>([]);
@@ -212,7 +238,12 @@ export function StocksSection() {
                       {s.symbol}
                     </TableCell>
                     <TableCell className="font-medium text-black whitespace-nowrap">
-                      {s.name ?? "—"}
+                      <div>{s.name ?? "—"}</div>
+                      <div className="mt-0.5 space-y-0 text-[10px] leading-4 text-gray-600">
+                        {/* <div>取得: {fmtDateTime(s.fetched_at)}</div> */}
+                        <div>株価: {fmtDate(s.price_as_of)}</div>
+                        <div>財務: {fmtDate(s.financials_as_of)}</div>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right text-black">
                       {fmtBillion(s.enterprise_value)}
