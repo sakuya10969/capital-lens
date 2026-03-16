@@ -12,11 +12,6 @@ HTTPクライアントの実体は infrastructure/jquants_client.py に閉じ込
 - GET /v2/equities/master      → 企業基本情報（CoName）
 - GET /v2/equities/bars/daily  → 株価四本値（AdjC）
 - GET /v2/fins/summary         → 財務情報サマリ（Sales/OP/NP/EPS/EqAR/ShOutFY…）
-- GET /v2/fins/details         → 財務諸表明細（BS の現金・有利子負債 → EV 計算用）
-
-EV 計算式:
-  EV = 時価総額 + 有利子負債合計 - 現金及び現金等価物
-  会計基準（IFRS / J-GAAP / US GAAP）ごとに使用するフィールド名が異なる。
 
 データマッピング (/fins/summary V2 フィールド名):
   CoName   → 企業名
@@ -33,7 +28,7 @@ EV 計算式:
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from src.core.exceptions import ExternalAPIError
 from src.infrastructure.jquants_client import jquants_client
@@ -148,177 +143,6 @@ def _select_fy_statement(statements: List[Dict[str, Any]]) -> Optional[Dict[str,
 
 
 # ------------------------------------------------------------------
-# EV 計算用フィールドマッピング（会計基準別）
-# ------------------------------------------------------------------
-
-# 現金及び現金等価物フィールド（各基準で試す候補）
-_CASH_KEYS: Dict[str, List[str]] = {
-    "IFRS": [
-        "Cash and cash equivalents (IFRS)",
-    ],
-    "JP": [
-        # 連結J-GAAP: 実際のAPIレスポンスで確認すること
-        "Cash and deposits (Japan GAAP)",
-        "Cash and cash equivalents (Japan GAAP)",
-        "Cash and cash equivalents, at carrying value (Japan GAAP)",
-    ],
-    "US": [
-        "Cash and cash equivalents (US GAAP)",
-    ],
-}
-
-# 有利子負債フィールド（各基準で合算する候補。存在するものだけ加算）
-_DEBT_KEYS: Dict[str, List[str]] = {
-    "IFRS": [
-        "Bonds and borrowings - CL (IFRS)",   # 流動: 社債・借入金
-        "Bonds and borrowings - NCL (IFRS)",  # 非流動: 社債・借入金
-    ],
-    "JP": [
-        # 連結J-GAAP: 実際のAPIレスポンスで確認すること
-        "Short-term borrowings (Japan GAAP)",
-        "Short-term loans payable (Japan GAAP)",
-        "Current portion of bonds payable (Japan GAAP)",
-        "Current portion of long-term loans payable (Japan GAAP)",
-        "Current portion of long-term borrowings (Japan GAAP)",
-        "Bonds payable (Japan GAAP)",
-        "Long-term borrowings (Japan GAAP)",
-        "Long-term loans payable (Japan GAAP)",
-    ],
-    "US": [
-        "Short-term debt (US GAAP)",
-        "Current maturities of long-term debt (US GAAP)",
-        "Long-term debt (US GAAP)",
-    ],
-}
-
-
-def _detect_accounting_standard(doc_type: str) -> str:
-    """DocType から会計基準を判定する。"""
-    if "IFRS" in doc_type:
-        return "IFRS"
-    if doc_type.endswith("_JP") or "_JP_" in doc_type:
-        return "JP"
-    if "_US" in doc_type:
-        return "US"
-    return "UNKNOWN"
-
-
-def _extract_cash_and_debt(
-    fs: Dict[str, Any], standard: str
-) -> Tuple[Optional[float], Optional[float]]:
-    """FS辞書から現金・有利子負債合計を抽出する。
-
-    Args:
-        fs: fins/details の FS フィールド（会計帳票の生データ）
-        standard: 会計基準 ("IFRS" / "JP" / "US")
-
-    Returns:
-        (cash, total_interest_bearing_debt) - 取得不能な場合は None
-    """
-    if standard not in _CASH_KEYS:
-        logger.warning("EV計算: 未対応の会計基準 '%s'", standard)
-        return None, None
-
-    # 現金取得: 候補キーを順番に試す
-    cash: Optional[float] = None
-    for key in _CASH_KEYS[standard]:
-        cash = _safe_num(fs.get(key))
-        if cash is not None:
-            logger.debug("EV: 現金フィールド '%s' = %s", key, cash)
-            break
-
-    # 有利子負債: 存在するフィールドを全て合算
-    total_debt: float = 0.0
-    debt_found = False
-    for key in _DEBT_KEYS[standard]:
-        val = _safe_num(fs.get(key))
-        if val is not None and val > 0:
-            logger.debug("EV: 負債フィールド '%s' = %s", key, val)
-            total_debt += val
-            debt_found = True
-
-    return cash, (total_debt if debt_found else None)
-
-
-# ------------------------------------------------------------------
-# fins/details 取得
-# ------------------------------------------------------------------
-
-
-def _fetch_ev_from_details(
-    jq_code: str, disc_date: str, market_cap: float
-) -> Optional[float]:
-    """fins/details から EV を計算する。
-
-    fins/summary で選択した FY レコードの DiscDate を使い、
-    同日の fins/details を取得して BS 情報から EV を算出する。
-
-    EV = 時価総額 + 有利子負債合計 - 現金及び現金等価物
-
-    Args:
-        jq_code:    J-Quants 銘柄コード
-        disc_date:  fins/summary で選んだ FY レコードの開示日（YYYY-MM-DD）
-        market_cap: 算出済み時価総額
-
-    Returns:
-        EV (float) または None（取得不能・計算不能の場合）
-    """
-    try:
-        # DiscDate を指定して対象日の開示のみ取得（データ量を絞る）
-        resp = jquants_client.get("/fins/details", code=jq_code, date=disc_date)
-        data_list = _extract_data_records(resp, "/fins/details", jq_code)
-        if not data_list:
-            logger.warning("J-Quants /fins/details: %s (%s) にデータなし", jq_code, disc_date)
-            return None
-    except ExternalAPIError:
-        raise
-    except Exception as exc:
-        logger.warning("fins/details 取得エラー %s: %s", jq_code, exc)
-        return None
-
-    # 通期（DocType に "FY" 含む）+ 連結（"Consolidated" 含む）を優先
-    def _priority(doc_type: str) -> int:
-        fy = "FY" in doc_type
-        cons = "Consolidated" in doc_type
-        if fy and cons:
-            return 0
-        if fy:
-            return 1
-        return 2
-
-    sorted_records = sorted(
-        data_list,
-        key=lambda r: (_priority(r.get("DocType", "")), r.get("DiscDate", "")),
-    )
-    record = sorted_records[0] if sorted_records else None
-    if record is None:
-        return None
-
-    doc_type = record.get("DocType", "")
-    fs: Dict[str, Any] = record.get("FS", {})
-    standard = _detect_accounting_standard(doc_type)
-
-    logger.debug(
-        "fins/details %s: DocType=%s, standard=%s", jq_code, doc_type, standard
-    )
-
-    cash, total_debt = _extract_cash_and_debt(fs, standard)
-
-    if cash is None or total_debt is None:
-        logger.info(
-            "EV計算不能 %s: cash=%s, debt=%s (標準=%s, DocType=%s)",
-            jq_code, cash, total_debt, standard, doc_type,
-        )
-        return None
-
-    ev = market_cap + total_debt - cash
-    logger.debug(
-        "EV %s: %s + %s - %s = %s", jq_code, market_cap, total_debt, cash, ev
-    )
-    return ev
-
-
-# ------------------------------------------------------------------
 # メイン取得関数
 # ------------------------------------------------------------------
 
@@ -400,18 +224,15 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
     dividend_yield: Optional[float] = None
     roe: Optional[float] = None
     equity_ratio: Optional[float] = None
-    _disc_date_for_ev: Optional[str] = None  # EV計算用に fins/details へ渡す開示日
-
     try:
         summary_resp = jquants_client.get("/fins/summary", code=jq_code)
         summary_list = _extract_data_records(summary_resp, "/fins/summary", jq_code)
         stmt = _select_fy_statement(summary_list)
 
         if stmt:
-            _disc_date_for_ev = stmt.get("DiscDate")
             logger.debug(
                 "J-Quants /fins/summary %s: CurPerType=%s, DiscDate=%s",
-                jq_code, stmt.get("CurPerType"), _disc_date_for_ev,
+                jq_code, stmt.get("CurPerType"), stmt.get("DiscDate"),
             )
 
             revenue = _safe_num(stmt.get("Sales"))
@@ -456,20 +277,9 @@ def fetch_stock_record_jquants(code: str) -> StockRecord:
             "J-Quants /fins/summary パースエラー %s: %s", jq_code, exc
         )
 
-    # ---- 4. 企業価値（EV）(/fins/details) ----------------------------------
-    # EV = 時価総額 + 有利子負債合計 - 現金及び現金等価物
-    # fins/details の BS データから算出。会計基準（IFRS/J-GAAP/US）別に対応。
-    # market_cap または disc_date が取得できない場合は null。
+    # ---- 4. 企業価値（EV） -------------------------------------------------
+    # 無料プランでは /fins/details を利用できないため、EV は未提供とする。
     enterprise_value: Optional[float] = None
-    if market_cap is not None and _disc_date_for_ev:
-        try:
-            enterprise_value = _fetch_ev_from_details(
-                jq_code, _disc_date_for_ev, market_cap
-            )
-        except ExternalAPIError as exc:
-            logger.warning(
-                "fins/details 取得失敗 %s (EV は null): %s", jq_code, exc.detail
-            )
 
     return StockRecord(
         code=code,
