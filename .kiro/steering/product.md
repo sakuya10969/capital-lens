@@ -2,80 +2,80 @@
 inclusion: always
 ---
 
-# Capital Lens — Product Context
+# Capital Lens — プロダクト概要
 
-Capital Lens is a market intelligence platform that generates weekly reports on Japanese and global capital markets.
+Capital Lensは、日本および世界の資本市場に関する週次レポートを生成するマーケットインテリジェンスプラットフォームです。
 
-## Product Purpose
+## プロダクトの目的
 
-Provide a consolidated view of capital market conditions and investment opportunities, with a focus on:
-- Current market trends across asset classes
-- Newly listed IPO companies in Japan
-- AI and consulting sector analysis
+資本市場の状況と投資機会を一元的に把握できるビューを提供します。主な焦点:
+- 各アセットクラスの市場トレンド
+- 日本の新規上場（IPO）企業
+- AI・コンサルティングセクターの分析
 
-The platform aggregates data from multiple sources and presents it in a unified dashboard, reducing the time needed to gather market intelligence.
+複数のデータソースを集約し、統一されたダッシュボードで表示することで、マーケットインテリジェンスの収集にかかる時間を削減します。
 
-## Target Users
+## ターゲットユーザー
 
-- Investors and analysts tracking Japanese equity markets
-- Professionals interested in IPO opportunities
-- Those monitoring AI and consulting sector trends
+- 日本株式市場を追跡する投資家・アナリスト
+- IPO機会に関心のあるプロフェッショナル
+- AI・コンサルティングセクターのトレンドを監視する人々
 
-Users expect timely, accurate data with minimal friction. The interface should be clean and information-dense.
+ユーザーはタイムリーで正確なデータを、最小限の操作で得られることを期待しています。インターフェースはクリーンで情報密度の高いものであるべきです。
 
-## Core Features
+## コア機能
 
-### 1. Market Overview
-Real-time snapshot of key market indicators:
-- Japanese indices (Nikkei, TOPIX, Growth 250)
-- US indices (S&P 500, NASDAQ, Dow, SOX)
-- Risk indicators (VIX, Bitcoin)
-- Bond yields (US 2Y, 10Y)
-- FX rates (USD/JPY)
-- Commodities (WTI crude, gold)
+### 1. マーケット概況
+主要市場指標のリアルタイムスナップショット:
+- 日本の指数（日経平均、TOPIX、グロース250）
+- 米国の指数（S&P 500、NASDAQ、ダウ、SOX）
+- リスク指標（VIX、ビットコイン）
+- 債券利回り（米国2年、10年）
+- 為替レート（USD/JPY）
+- コモディティ（WTI原油、金）
 
-### 2. IPO Intelligence
-Recent listings on Japanese exchanges (JPX):
-- Company name, ticker, market segment
-- Listing date and offering price
-- On-demand AI-generated summaries from prospectus PDFs
+### 2. IPOインテリジェンス
+日本取引所（JPX）の直近上場銘柄:
+- 企業名、ティッカー、市場区分
+- 上場日、公募価格
+- 目論見書PDFからのAI生成サマリー（オンデマンド）
 
-### 3. AI × Consulting Sector Analysis
-Focused analysis of AI and consulting companies:
-- PER (Price-to-Earnings Ratio) comparison
-- Upcoming earnings announcements
-- Consolidated text report
+### 3. AI × コンサルティングセクター分析
+AI・コンサルティング企業に特化した分析:
+- PER（株価収益率）比較
+- 今後の決算発表予定
+- 統合テキストレポート
 
-## Weekly Output Concept
+## 週次アウトプットのコンセプト
 
-The platform is designed to support a weekly intelligence workflow:
-- Data refreshes automatically or on-demand
-- Users can access the dashboard anytime, but the intended cadence is weekly review
-- Reports are generated on Friday to capture the week's activity
+プラットフォームは週次のインテリジェンスワークフローをサポートする設計です:
+- データは自動またはオンデマンドで更新
+- ダッシュボードはいつでもアクセス可能だが、想定される利用頻度は週次レビュー
+- レポートは金曜日に生成し、その週の活動を捕捉
 
-The system does not enforce a strict weekly schedule. Instead, it provides fresh data whenever accessed, allowing users to pull reports as needed.
+厳密な週次スケジュールを強制するものではありません。アクセス時に最新データを提供し、ユーザーが必要に応じてレポートを取得できます。
 
-## Scope and Non-Goals
+## スコープと非目標
 
-### In Scope
-- Aggregating public market data from free sources
-- Presenting data in a clean, accessible format
-- Generating AI summaries for IPO prospectuses
-- Tracking a curated list of AI/consulting companies
+### スコープ内
+- 無料ソースからの公開市場データの集約
+- クリーンでアクセスしやすい形式でのデータ表示
+- IPO目論見書のAIサマリー生成
+- AI・コンサルティング企業のキュレーションリスト追跡
 
-### Out of Scope (for now)
-- User authentication or personalization
-- Historical data storage or trend analysis
-- Trading recommendations or financial advice
-- Real-time streaming data
-- Mobile app
-- Email delivery of reports
-- Multi-language support beyond Japanese/English
+### スコープ外（現時点）
+- ユーザー認証・パーソナライゼーション
+- 過去データの保存・トレンド分析
+- 売買推奨・金融アドバイス
+- リアルタイムストリーミングデータ
+- モバイルアプリ
+- レポートのメール配信
+- 日本語/英語以外の多言語対応
 
-## Design Philosophy
+## 設計思想
 
-- Simplicity over feature bloat
-- Fast load times and responsive UI
-- Graceful degradation when external APIs fail
-- Minimal user interaction required
-- Data freshness over historical depth
+- 機能過多よりシンプルさ
+- 高速な読み込みとレスポンシブUI
+- 外部APIが失敗した場合のグレースフルデグラデーション
+- 最小限のユーザー操作
+- 過去データの深さよりデータの鮮度

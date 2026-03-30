@@ -2,156 +2,156 @@
 inclusion: always
 ---
 
-# Capital Lens — Technical Stack
+# Capital Lens — 技術スタック
 
-## Architecture Overview
+## アーキテクチャ概要
 
-Capital Lens is a full-stack application with a clear separation between frontend and backend:
-- Frontend: Next.js (React) with TypeScript
-- Backend: FastAPI (Python) with async/await
-- Communication: REST API over HTTP
-- Deployment: Static export (frontend) + containerized API (backend)
+Capital Lensはフロントエンドとバックエンドが明確に分離されたフルスタックアプリケーションです:
+- フロントエンド: Next.js (React) + TypeScript
+- バックエンド: FastAPI (Python) + async/await
+- 通信: REST API over HTTP
+- デプロイ: 静的エクスポート（フロントエンド）+ コンテナ化API（バックエンド）
 
-## Frontend Stack
+## フロントエンドスタック
 
-### Core Technologies
+### コア技術
 - Next.js 16 (App Router)
 - React 19
 - TypeScript 5
 - Tailwind CSS 4
 
-### Key Libraries
-- `lucide-react` for icons
-- `clsx` + `tailwind-merge` for conditional styling
-- Custom UI components (card, table)
+### 主要ライブラリ
+- `lucide-react`: アイコン
+- `clsx` + `tailwind-merge`: 条件付きスタイリング
+- カスタムUIコンポーネント（card, table）
 
-### Rendering Strategy
-- Server-side rendering (SSR) for market overview
-- Client-side rendering for IPO table and AI consulting (interactive features)
-- Static generation where possible
+### レンダリング戦略
+- サーバーサイドレンダリング（SSR）: マーケット概況
+- クライアントサイドレンダリング: IPOテーブル、AIコンサルティング（インタラクティブ機能）
+- 可能な箇所では静的生成
 
-### API Integration
-- HTTP client abstracted in `src/lib/http/client.ts`
-- API functions in `src/lib/api/` (market, ipo, ai-consulting)
-- Type-safe responses using TypeScript interfaces
+### API連携
+- HTTPクライアントは `src/lib/http/client.ts` に抽象化
+- API関数は `src/lib/api/`（market, ipo, ai-consulting）
+- TypeScriptインターフェースによる型安全なレスポンス
 
-### Development
-- Package manager: pnpm
-- Dev server: `pnpm dev` (port 3000)
-- Build: `pnpm build` (static export to `out/`)
-- Linting: ESLint with Next.js config
+### 開発環境
+- パッケージマネージャー: pnpm
+- 開発サーバー: `pnpm dev`（ポート3000）
+- ビルド: `pnpm build`（`out/` への静的エクスポート）
+- リンティング: ESLint + Next.js設定
 
-## Backend Stack
+## バックエンドスタック
 
-### Core Technologies
-- FastAPI (async web framework)
+### コア技術
+- FastAPI（非同期Webフレームワーク）
 - Python 3.12+
-- Pydantic for data validation
-- uvicorn as ASGI server
+- Pydantic（データバリデーション）
+- uvicorn（ASGIサーバー）
 
-### Key Libraries
-- `yfinance` for market data (Yahoo Finance)
-- `httpx` for async HTTP requests
-- `beautifulsoup4` + `lxml` for HTML parsing
-- `pdfplumber` for PDF text extraction
-- `openai` for Azure OpenAI integration
-- `pandas` for data manipulation
-- `apscheduler` for potential scheduled tasks
+### 主要ライブラリ
+- `yfinance`: 市場データ（Yahoo Finance）
+- `httpx`: 非同期HTTPリクエスト
+- `beautifulsoup4` + `lxml`: HTMLパーシング
+- `pdfplumber`: PDFテキスト抽出
+- `openai`: Azure OpenAI連携
+- `pandas`: データ操作
+- `apscheduler`: スケジュールタスク（将来用）
 
-### API Design
-- RESTful endpoints under `/api/`
-- JSON responses with Pydantic schemas
-- CORS enabled for local development
-- Global exception handlers for external API errors
+### API設計
+- `/api/` 配下のRESTfulエンドポイント
+- PydanticスキーマによるJSONレスポンス
+- ローカル開発用にCORS有効化
+- 外部APIエラー用のグローバル例外ハンドラー
 
-### Service Layer
-- Services encapsulate business logic
-- Async-first design with `asyncio`
-- Timeout protection on all external calls
-- In-memory caching for expensive operations (24h TTL)
+### サービス層
+- サービスがビジネスロジックをカプセル化
+- `asyncio` による非同期ファーストの設計
+- すべての外部呼び出しにタイムアウト保護
+- 高コスト処理のインメモリキャッシュ（TTL 24時間）
 
-### Development
-- Package manager: uv (Python)
-- Dev server: `uvicorn src.main:app --reload`
-- Formatting: black
-- Environment: `.env` file for API keys
+### 開発環境
+- パッケージマネージャー: uv (Python)
+- 開発サーバー: `uvicorn src.main:app --reload`
+- フォーマッター: black
+- 環境設定: `.env` ファイルでAPIキー管理
 
-## Data Sources
+## データソース
 
-### Market Data
-- Yahoo Finance (via yfinance): indices, bonds, FX, commodities
-- Free tier, no API key required
-- Timeout: 15 seconds per request
-- Parallel fetching with `asyncio.gather`
+### 市場データ
+- Yahoo Finance（yfinance経由）: 指数、債券、為替、コモディティ
+- 無料枠、APIキー不要
+- タイムアウト: リクエストあたり15秒
+- `asyncio.gather` による並列フェッチ
 
-### IPO Data
-- JPX (Japan Exchange Group) website
-- Web scraping of public HTML tables
-- PDF prospectus downloads for summaries
-- Timeout: 15 seconds for HTML, 30 seconds for PDF
+### IPOデータ
+- JPX（日本取引所グループ）ウェブサイト
+- 公開HTMLテーブルのWebスクレイピング
+- サマリー用の目論見書PDFダウンロード
+- タイムアウト: HTML 15秒、PDF 30秒
 
-### AI Summaries
-- Azure OpenAI (GPT-4 or similar)
-- Requires `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_API_KEY`
-- Used for IPO prospectus summarization
-- Cached for 24 hours to reduce costs
+### AIサマリー
+- Azure OpenAI（GPT-4等）
+- `AZURE_OPENAI_ENDPOINT` と `AZURE_OPENAI_API_KEY` が必要
+- IPO目論見書の要約に使用
+- コスト削減のため24時間キャッシュ
 
-### AI/Consulting Tickers
-- Static JSON configuration: `server/config/ai_consulting_tickers.json`
-- Manually curated list of company names and ticker symbols
-- Fetched via yfinance for PER and earnings data
+### AI・コンサルティングティッカー
+- 静的JSON設定: `server/config/ai_consulting_tickers.json`
+- 手動キュレーションされた企業名・ティッカーシンボルのリスト
+- yfinance経由でPER・決算データを取得
 
-## Scheduling Concept
+## スケジューリングのコンセプト
 
-The current implementation is on-demand (data fetched when users access the dashboard).
+現在の実装はオンデマンド（ユーザーがダッシュボードにアクセスした際にデータ取得）です。
 
-For weekly automation:
-- `apscheduler` is included in dependencies
-- Could schedule tasks to pre-fetch and cache data every Friday
-- Could trigger report generation and storage
-- Not yet implemented — system is designed to support it
+週次自動化に向けて:
+- `apscheduler` は依存関係に含まれている
+- 毎週金曜日にデータをプリフェッチ・キャッシュするタスクをスケジュール可能
+- レポート生成・保存のトリガーも可能
+- 未実装 — システムはサポートできる設計
 
-## Development Environment
+## 開発環境
 
-### Prerequisites
-- Node.js 20+ (frontend)
-- Python 3.12+ (backend)
-- pnpm (frontend package manager)
-- uv (Python package manager)
+### 前提条件
+- Node.js 20+（フロントエンド）
+- Python 3.12+（バックエンド）
+- pnpm（フロントエンドパッケージマネージャー）
+- uv（Pythonパッケージマネージャー）
 
-### Local Setup
-1. Backend: `cd server && uv sync && uvicorn src.main:app --reload`
-2. Frontend: `cd client && pnpm install && pnpm dev`
-3. Environment variables: `.env` files in both directories
+### ローカルセットアップ
+1. バックエンド: `cd server && uv sync && uvicorn src.main:app --reload`
+2. フロントエンド: `cd client && pnpm install && pnpm dev`
+3. 環境変数: 両ディレクトリの `.env` ファイル
 
-### API Keys Required
+### 必要なAPIキー
 - Azure OpenAI: `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_DEPLOYMENT`
-- No keys needed for yfinance or JPX scraping
+- yfinanceやJPXスクレイピングにはキー不要
 
-## Deployment
+## デプロイ
 
-### Backend
-- Dockerfile provided in `server/`
-- Deploy script: `server/deploy.sh`
-- Runs as containerized service
-- Environment variables injected at runtime
+### バックエンド
+- `server/` にDockerfileを提供
+- デプロイスクリプト: `server/deploy.sh`
+- コンテナ化サービスとして実行
+- 環境変数はランタイムに注入
 
-### Frontend
-- Static export: `pnpm build` generates `out/` directory
-- Can be hosted on any static file server
-- Environment variable: `NEXT_PUBLIC_API_BASE_URL` points to backend
+### フロントエンド
+- 静的エクスポート: `pnpm build` で `out/` ディレクトリを生成
+- 任意の静的ファイルサーバーでホスト可能
+- 環境変数: `NEXT_PUBLIC_API_BASE_URL` でバックエンドを指定
 
-## Error Handling
+## エラーハンドリング
 
-- Custom exceptions: `ExternalAPIError`, `DataParsingError`
-- Global exception handlers return structured JSON errors
-- Frontend displays user-friendly error messages
-- Graceful degradation: if one data source fails, others still render
+- カスタム例外: `ExternalAPIError`, `DataParsingError`
+- グローバル例外ハンドラーが構造化JSONエラーを返却
+- フロントエンドはユーザーフレンドリーなエラーメッセージを表示
+- グレースフルデグラデーション: 1つのデータソースが失敗しても他は正常にレンダリング
 
-## Performance Considerations
+## パフォーマンスの考慮事項
 
-- Parallel data fetching reduces latency
-- Timeouts prevent hanging requests
-- In-memory caching for expensive operations
-- Static generation where possible (frontend)
-- Async I/O throughout backend
+- 並列データフェッチによるレイテンシ削減
+- タイムアウトによるリクエストのハング防止
+- 高コスト処理のインメモリキャッシュ
+- 可能な箇所での静的生成（フロントエンド）
+- バックエンド全体での非同期I/O

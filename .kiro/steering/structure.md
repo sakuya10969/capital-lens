@@ -2,107 +2,107 @@
 inclusion: always
 ---
 
-# Capital Lens — Repository Structure
+# Capital Lens — リポジトリ構成
 
-## High-Level Layout
+## 全体レイアウト
 
 ```
 capital-lens/
-├── client/          # Next.js frontend
-├── server/          # FastAPI backend
-├── .github/         # GitHub Actions workflows
-└── .kiro/           # Kiro steering documents
+├── client/          # Next.js フロントエンド
+├── server/          # FastAPI バックエンド
+├── .github/         # GitHub Actions ワークフロー
+└── .kiro/           # Kiro ステアリングドキュメント
 ```
 
-The repository is a monorepo with clear separation between frontend and backend. Each has its own dependencies, build process, and deployment strategy.
+フロントエンドとバックエンドが明確に分離されたモノレポ構成です。それぞれ独自の依存関係、ビルドプロセス、デプロイ戦略を持ちます。
 
-## Frontend Structure (`client/`)
+## フロントエンド構成 (`client/`)
 
 ```
 client/
 ├── src/
 │   ├── app/                 # Next.js App Router
-│   │   ├── layout.tsx       # Root layout
-│   │   ├── page.tsx         # Home page (dashboard)
-│   │   └── globals.css      # Global styles
-│   ├── components/          # React components
+│   │   ├── layout.tsx       # ルートレイアウト
+│   │   ├── page.tsx         # ホームページ（ダッシュボード）
+│   │   └── globals.css      # グローバルスタイル
+│   ├── components/          # Reactコンポーネント
 │   │   ├── market-overview.tsx
 │   │   ├── ipo-table.tsx
 │   │   ├── ai-consulting.tsx
-│   │   └── ui/              # Reusable UI primitives
+│   │   └── ui/              # 再利用可能なUIプリミティブ
 │   ├── lib/
-│   │   ├── api/             # API client functions
-│   │   ├── http/            # HTTP client abstraction
-│   │   ├── formatters/      # Data formatting utilities
-│   │   └── utils.ts         # General utilities
-│   └── types/               # TypeScript type definitions
-├── public/                  # Static assets
+│   │   ├── api/             # APIクライアント関数
+│   │   ├── http/            # HTTPクライアント抽象化
+│   │   ├── formatters/      # データフォーマットユーティリティ
+│   │   └── utils.ts         # 汎用ユーティリティ
+│   └── types/               # TypeScript型定義
+├── public/                  # 静的アセット
 ├── package.json
 ├── next.config.ts
 └── tsconfig.json
 ```
 
-### Frontend Conventions
+### フロントエンドの規約
 
-- Components are organized by feature (market, ipo, ai-consulting)
-- UI primitives live in `components/ui/`
-- API calls are abstracted in `lib/api/` (one file per feature)
-- Types mirror backend schemas in `types/`
-- Server components by default, client components marked with `"use client"`
+- コンポーネントは機能別に整理（market, ipo, ai-consulting）
+- UIプリミティブは `components/ui/` に配置
+- API呼び出しは `lib/api/` に抽象化（機能ごとに1ファイル）
+- 型定義はバックエンドのスキーマと対応（`types/`）
+- デフォルトはサーバーコンポーネント、クライアントコンポーネントは `"use client"` を明記
 
-### Where to Add Frontend Features
+### フロントエンド機能の追加先
 
-- New dashboard section → new component in `src/components/`
-- New API endpoint → new function in `src/lib/api/`
-- New data type → new file in `src/types/`
-- New page → new route in `src/app/`
+- 新しいダッシュボードセクション → `src/components/` に新コンポーネント
+- 新しいAPIエンドポイント → `src/lib/api/` に新関数
+- 新しいデータ型 → `src/types/` に新ファイル
+- 新しいページ → `src/app/` に新ルート
 
-## Backend Structure (`server/`)
+## バックエンド構成 (`server/`)
 
 ```
 server/
 ├── src/
-│   ├── main.py              # FastAPI app entry point
+│   ├── main.py              # FastAPIアプリのエントリーポイント
 │   ├── core/
-│   │   ├── config.py        # Settings (env vars, timeouts)
-│   │   └── exceptions.py    # Custom exception classes
-│   ├── routers/             # API route handlers
+│   │   ├── config.py        # 設定（環境変数、タイムアウト）
+│   │   └── exceptions.py    # カスタム例外クラス
+│   ├── routers/             # APIルートハンドラー
 │   │   ├── market.py        # GET /api/market/overview
 │   │   ├── ipo.py           # GET /api/ipo/latest, /api/ipo/summary/{code}
 │   │   └── ai_consulting.py # GET /api/ai-consulting/*
-│   ├── services/            # Business logic layer
+│   ├── services/            # ビジネスロジック層
 │   │   ├── market.py
 │   │   ├── ipo.py
 │   │   └── ai_consulting.py
-│   ├── schemas/             # Pydantic models (request/response)
+│   ├── schemas/             # Pydanticモデル（リクエスト/レスポンス）
 │   │   ├── market.py
 │   │   ├── ipo.py
 │   │   └── ai_consulting.py
-│   └── utils/               # Shared utilities
-│       ├── yfinance.py      # Yahoo Finance helpers
-│       ├── jpx_parser.py    # JPX HTML parsing
-│       ├── pdf.py           # PDF text extraction
-│       └── llm.py           # Azure OpenAI integration
+│   └── utils/               # 共有ユーティリティ
+│       ├── yfinance.py      # Yahoo Financeヘルパー
+│       ├── jpx_parser.py    # JPX HTMLパーシング
+│       ├── pdf.py           # PDFテキスト抽出
+│       └── llm.py           # Azure OpenAI連携
 ├── config/
-│   └── ai_consulting_tickers.json  # Curated ticker list
+│   └── ai_consulting_tickers.json  # キュレーション済みティッカーリスト
 ├── docs/
-│   └── implementation_plan.md      # Original design doc
+│   └── implementation_plan.md      # 設計ドキュメント
 ├── pyproject.toml
 ├── Dockerfile
 └── deploy.sh
 ```
 
-### Backend Conventions
+### バックエンドの規約
 
-- Routers handle HTTP concerns (request/response)
-- Services contain business logic (data fetching, transformation)
-- Schemas define data contracts (Pydantic models)
-- Utils are reusable, stateless functions
-- No database layer (in-memory only)
+- RoutersはHTTP関連の処理（リクエスト/レスポンス）を担当
+- Servicesはビジネスロジック（データ取得、変換）を含む
+- Schemasはデータ契約を定義（Pydanticモデル）
+- Utilsは再利用可能なステートレス関数
+- データベース層なし（インメモリのみ）
 
-### Dependency Injection
+### 依存性注入
 
-Services are injected into routers using FastAPI's `Depends()`:
+FastAPIの `Depends()` を使用してサービスをルーターに注入:
 
 ```python
 @router.get("/api/market/overview")
@@ -110,64 +110,64 @@ async def get_market_overview(service: MarketService = Depends()):
     return await service.get_market_overview()
 ```
 
-This keeps routers thin and services testable.
+ルーターを薄く保ち、サービスをテスト可能にします。
 
-### Where to Add Backend Features
+### バックエンド機能の追加先
 
-- New API endpoint → new router in `src/routers/`
-- New data source → new service in `src/services/`
-- New external API integration → new utility in `src/utils/`
-- New response format → new schema in `src/schemas/`
-- New configuration → add to `src/core/config.py`
+- 新しいAPIエンドポイント → `src/routers/` に新ルーター
+- 新しいデータソース → `src/services/` に新サービス
+- 新しい外部API連携 → `src/utils/` に新ユーティリティ
+- 新しいレスポンス形式 → `src/schemas/` に新スキーマ
+- 新しい設定 → `src/core/config.py` に追加
 
-## Shared Concepts
+## 共通コンセプト
 
-### Type Alignment
+### 型の整合性
 
-Frontend types (`client/src/types/`) should mirror backend schemas (`server/src/schemas/`). When adding a new API endpoint:
+フロントエンドの型（`client/src/types/`）はバックエンドのスキーマ（`server/src/schemas/`）と対応させます。新しいAPIエンドポイントを追加する際:
 
-1. Define Pydantic schema in backend
-2. Create matching TypeScript interface in frontend
-3. Use the interface in API client function
+1. バックエンドでPydanticスキーマを定義
+2. フロントエンドで対応するTypeScriptインターフェースを作成
+3. APIクライアント関数でそのインターフェースを使用
 
-### Error Handling
+### エラーハンドリング
 
-- Backend raises custom exceptions (`ExternalAPIError`, `DataParsingError`)
-- Global exception handlers convert to structured JSON
-- Frontend checks response status and displays user-friendly messages
+- バックエンドはカスタム例外を送出（`ExternalAPIError`, `DataParsingError`）
+- グローバル例外ハンドラーが構造化JSONに変換
+- フロントエンドはレスポンスステータスを確認し、ユーザーフレンドリーなメッセージを表示
 
-### Configuration
+### 設定
 
-- Backend: `.env` file in `server/` (API keys, timeouts)
-- Frontend: `.env.local` in `client/` (API base URL)
-- Ticker list: `server/config/ai_consulting_tickers.json`
+- バックエンド: `server/` の `.env` ファイル（APIキー、タイムアウト）
+- フロントエンド: `client/` の `.env.local`（APIベースURL）
+- ティッカーリスト: `server/config/ai_consulting_tickers.json`
 
-## Testing Strategy (Future)
+## テスト戦略（将来）
 
-Currently no tests are implemented. When adding tests:
+現時点ではテスト未実装。テスト追加時:
 
-- Frontend: Jest + React Testing Library in `client/src/__tests__/`
-- Backend: pytest in `server/tests/`
-- E2E: Playwright in `tests/e2e/`
+- フロントエンド: Jest + React Testing Library（`client/src/__tests__/`）
+- バックエンド: pytest（`server/tests/`）
+- E2E: Playwright（`tests/e2e/`）
 
-## Documentation
+## ドキュメント
 
-- Implementation plan: `server/docs/implementation_plan.md`
-- Steering documents: `.kiro/steering/`
-- README files in `client/` and `server/` (currently minimal)
+- 実装計画: `server/docs/implementation_plan.md`
+- ステアリングドキュメント: `.kiro/steering/`
+- READMEファイル: `client/` と `server/`（現時点では最小限）
 
-## Deployment Artifacts
+## デプロイ成果物
 
-- Frontend: `client/out/` (static export)
-- Backend: Docker image built from `server/Dockerfile`
-- Deploy script: `server/deploy.sh` (backend only)
+- フロントエンド: `client/out/`（静的エクスポート）
+- バックエンド: `server/Dockerfile` からビルドされるDockerイメージ
+- デプロイスクリプト: `server/deploy.sh`（バックエンドのみ）
 
-## General Guidelines
+## 全般的なガイドライン
 
-- Keep frontend and backend loosely coupled (communicate via REST API)
-- Avoid duplicating logic between frontend and backend
-- Use TypeScript/Pydantic for type safety
-- Prefer async/await for I/O operations
-- Handle errors gracefully at every layer
-- Document complex logic with inline comments
-- Keep configuration in environment variables, not hardcoded
+- フロントエンドとバックエンドは疎結合に保つ（REST APIで通信）
+- フロントエンドとバックエンド間でロジックを重複させない
+- 型安全性のためにTypeScript/Pydanticを使用
+- I/O操作にはasync/awaitを優先
+- すべてのレイヤーでエラーをグレースフルに処理
+- 複雑なロジックにはインラインコメントで文書化
+- 設定は環境変数に保持し、ハードコードしない
